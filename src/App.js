@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 
 function MainApp() {
   // We're using ThemeContext but don't need to toggle since we're always in dark mode
+  // eslint-disable-next-line no-unused-vars
   const { isDarkMode } = useTheme();
   const [showAdmin, setShowAdmin] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);

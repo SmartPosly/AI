@@ -1,0 +1,36 @@
+{
+  "name": "دورات أدوات الذكاء الاصطناعي",
+  "short_name": "دورات الذكاء الاصطناعي",
+  "description": "دورات مكثفة لتعلم أدوات الذكاء الاصطناعي مثل ChatGPT وClaude وn8n وCursor وWindsurf وKiro وOpenRouter.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "logo192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["education", "productivity", "ai", "tools"],
+  "screenshots": [
+    {
+      "src": "screenshot1.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
