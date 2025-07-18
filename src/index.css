@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Cairo', Arial, sans-serif;
+  direction: rtl;
+  background: #f8f9fa;
+}

@@ -1,0 +1,756 @@
+[
+  {
+    "id": 1,
+    "name": "مستخدم 1",
+    "email": "user1@example.com",
+    "phone": "+966 575769385",
+    "course": "nlp",
+    "education": "بكالوريوس علوم الحاسب",
+    "experience": "عملت في شركات تقنية كبرى",
+    "interests": [
+      "ai"
+    ],
+    "registrationDate": "2025-07-04T15:47:11.271Z"
+  },
+  {
+    "id": 2,
+    "name": "مستخدم 2",
+    "email": "user2@example.com",
+    "phone": "+966 551561393",
+    "course": "ai-intro",
+    "education": "بكالوريوس هندسة",
+    "experience": "سنة واحدة في تحليل البيانات",
+    "interests": [
+      "data",
+      "nlp",
+      "ml",
+      "robotics"
+    ],
+    "registrationDate": "2025-07-03T15:47:11.272Z"
+  },
+  {
+    "id": 3,
+    "name": "مستخدم 3",
+    "email": "user3@example.com",
+    "phone": "+966 510750839",
+    "course": "nlp",
+    "education": "ماجستير الذكاء الاصطناعي",
+    "experience": "عملت في شركات تقنية كبرى",
+    "interests": [
+      "ai",
+      "ml"
+    ],
+    "registrationDate": "2025-07-04T15:47:11.272Z"
+  },
+  {
+    "id": 4,
+    "name": "مستخدم 4",
+    "email": "user4@example.com",
+    "phone": "+966 531498606",
+    "course": "data-science",
+    "education": "بكالوريوس علوم الحاسب",
+    "experience": "عملت في شركات تقنية كبرى",
+    "interests": [
+      "ml",
+      "ai",
+      "nlp",
+      "data",
+      "robotics"
+    ],
+    "registrationDate": "2025-07-04T15:47:11.272Z"
+  },
+  {
+    "id": 5,
+    "name": "مستخدم 5",
+    "email": "user5@example.com",
+    "phone": "+966 562740465",
+    "course": "data-science",
+    "education": "بكالوريوس علوم الحاسب",
+    "experience": "خبرة في مشاريع الذكاء الاصطناعي",
+    "interests": [
+      "robotics",
+      "ai",
+      "data",
+      "ml",
+      "nlp"
+    ],
+    "registrationDate": "2025-06-30T15:47:11.272Z"
+  },
+  {
+    "id": 6,
+    "name": "مستخدم 6",
+    "email": "user6@example.com",
+    "phone": "+966 586364173",
+    "course": "machine-learning",
+    "education": "ماجستير الذكاء الاصطناعي",
+    "experience": "سنة واحدة في تحليل البيانات",
+    "interests": [
+      "robotics",
+      "data"
+    ],
+    "registrationDate": "2025-07-15T15:47:11.272Z"
+  },
+  {
+    "id": 7,
+    "name": "مستخدم 7",
+    "email": "user7@example.com",
+    "phone": "+966 511216498",
+    "course": "nlp",
+    "education": "دبلوم برمجة",
+    "experience": "سنة واحدة في تحليل البيانات",
+    "interests": [
+      "ai",
+      "data",
+      "ml",
+      "robotics",
+      "nlp"
+    ],
+    "registrationDate": "2025-06-22T15:47:11.272Z"
+  },
+  {
+    "id": 8,
+    "name": "مستخدم 8",
+    "email": "user8@example.com",
+    "phone": "+966 591991474",
+    "course": "data-science",
+    "education": "بكالوريوس هندسة",
+    "experience": "عملت في شركات تقنية كبرى",
+    "interests": [
+      "ai",
+      "ml",
+      "robotics"
+    ],
+    "registrationDate": "2025-06-30T15:47:11.272Z"
+  },
+  {
+    "id": 9,
+    "name": "مستخدم 9",
+    "email": "user9@example.com",
+    "phone": "+966 555091434",
+    "course": "machine-learning",
+    "education": "ماجستير الذكاء الاصطناعي",
+    "experience": "خبرة في مشاريع الذكاء الاصطناعي",
+    "interests": [
+      "nlp",
+      "data",
+      "robotics"
+    ],
+    "registrationDate": "2025-06-23T15:47:11.272Z"
+  },
+  {
+    "id": 10,
+    "name": "مستخدم 10",
+    "email": "user10@example.com",
+    "phone": "+966 541565124",
+    "course": "ai-intro",
+    "education": "دبلوم برمجة",
+    "experience": "سنة واحدة في تحليل البيانات",
+    "interests": [
+      "nlp",
+      "robotics",
+      "ai"
+    ],
+    "registrationDate": "2025-06-28T15:47:11.272Z"
+  },
+  {
+    "id": 11,
+    "name": "مستخدم 11",
+    "email": "user11@example.com",
+    "phone": "+966 549412802",
+    "course": "ai-intro",
+    "education": "بكالوريوس هندسة",
+    "experience": "3 سنوات في تطوير البرمجيات",
+    "interests": [
+      "robotics",
+      "nlp",
+      "data",
+      "ml",
+      "ai"
+    ],
+    "registrationDate": "2025-06-19T15:47:11.272Z"
+  },
+  {
+    "id": 12,
+    "name": "مستخدم 12",
+    "email": "user12@example.com",
+    "phone": "+966 552512723",
+    "course": "data-science",
+    "education": "دبلوم برمجة",
+    "experience": "سنة واحدة في تحليل البيانات",
+    "interests": [
+      "nlp"
+    ],
+    "registrationDate": "2025-06-25T15:47:11.272Z"
+  },
+  {
+    "id": 13,
+    "name": "مستخدم 13",
+    "email": "user13@example.com",
+    "phone": "+966 556746261",
+    "course": "deep-learning",
+    "education": "ماجستير الذكاء الاصطناعي",
+    "experience": "لا توجد خبرة سابقة في المجال",
+    "interests": [
+      "data",
+      "robotics",
+      "nlp"
+    ],
+    "registrationDate": "2025-07-07T15:47:11.272Z"
+  },
+  {
+    "id": 14,
+    "name": "مستخدم 14",
+    "email": "user14@example.com",
+    "phone": "+966 521939402",
+    "course": "ai-intro",
+    "education": "ماجستير الذكاء الاصطناعي",
+    "experience": "لا توجد خبرة سابقة في المجال",
+    "interests": [
+      "ai"
+    ],
+    "registrationDate": "2025-07-17T15:47:11.272Z"
+  },
+  {
+    "id": 15,
+    "name": "مستخدم 15",
+    "email": "user15@example.com",
+    "phone": "+966 537003857",
+    "course": "nlp",
+    "education": "دبلوم برمجة",
+    "experience": "3 سنوات في تطوير البرمجيات",
+    "interests": [
+      "robotics",
+      "data"
+    ],
+    "registrationDate": "2025-07-10T15:47:11.272Z"
+  },
+  {
+    "id": 16,
+    "name": "مستخدم 16",
+    "email": "user16@example.com",
+    "phone": "+966 579711294",
+    "course": "ai-intro",
+    "education": "بكالوريوس علوم الحاسب",
+    "experience": "لا توجد خبرة سابقة في المجال",
+    "interests": [
+      "ml",
+      "nlp",
+      "ai"
+    ],
+    "registrationDate": "2025-06-25T15:47:11.272Z"
+  },
+  {
+    "id": 17,
+    "name": "مستخدم 17",
+    "email": "user17@example.com",
+    "phone": "+966 576212528",
+    "course": "machine-learning",
+    "education": "دبلوم برمجة",
+    "experience": "عملت في شركات تقنية كبرى",
+    "interests": [
+      "robotics",
+      "data",
+      "ai",
+      "ml"
+    ],
+    "registrationDate": "2025-07-08T15:47:11.272Z"
+  },
+  {
+    "id": 18,
+    "name": "مستخدم 18",
+    "email": "user18@example.com",
+    "phone": "+966 579580339",
+    "course": "machine-learning",
+    "education": "بكالوريوس هندسة",
+    "experience": "خبرة في مشاريع الذكاء الاصطناعي",
+    "interests": [
+      "nlp",
+      "ai",
+      "ml",
+      "data"
+    ],
+    "registrationDate": "2025-06-30T15:47:11.272Z"
+  },
+  {
+    "id": 19,
+    "name": "مستخدم 19",
+    "email": "user19@example.com",
+    "phone": "+966 578558433",
+    "course": "ai-intro",
+    "education": "دكتوراه علوم البيانات",
+    "experience": "لا توجد خبرة سابقة في المجال",
+    "interests": [
+      "nlp",
+      "data"
+    ],
+    "registrationDate": "2025-06-19T15:47:11.272Z"
+  },
+  {
+    "id": 20,
+    "name": "مستخدم 20",
+    "email": "user20@example.com",
+    "phone": "+966 559882482",
+    "course": "ai-intro",
+    "education": "بكالوريوس علوم الحاسب",
+    "experience": "خبرة في مشاريع الذكاء الاصطناعي",
+    "interests": [
+      "ai",
+      "robotics",
+      "nlp"
+    ],
+    "registrationDate": "2025-07-08T15:47:11.272Z"
+  },
+  {
+    "id": 21,
+    "name": "مستخدم 21",
+    "email": "user21@example.com",
+    "phone": "+966 590892235",
+    "course": "deep-learning",
+    "education": "بكالوريوس هندسة",
+    "experience": "عملت في شركات تقنية كبرى",
+    "interests": [
+      "data"
+    ],
+    "registrationDate": "2025-07-01T15:47:11.272Z"
+  },
+  {
+    "id": 22,
+    "name": "مستخدم 22",
+    "email": "user22@example.com",
+    "phone": "+966 572987038",
+    "course": "deep-learning",
+    "education": "ماجستير الذكاء الاصطناعي",
+    "experience": "عملت في شركات تقنية كبرى",
+    "interests": [
+      "nlp",
+      "data",
+      "ml",
+      "ai"
+    ],
+    "registrationDate": "2025-06-27T15:47:11.272Z"
+  },
+  {
+    "id": 23,
+    "name": "مستخدم 23",
+    "email": "user23@example.com",
+    "phone": "+966 575618045",
+    "course": "deep-learning",
+    "education": "دبلوم برمجة",
+    "experience": "لا توجد خبرة سابقة في المجال",
+    "interests": [
+      "data",
+      "robotics",
+      "ml",
+      "nlp",
+      "ai"
+    ],
+    "registrationDate": "2025-06-27T15:47:11.272Z"
+  },
+  {
+    "id": 24,
+    "name": "مستخدم 24",
+    "email": "user24@example.com",
+    "phone": "+966 584025053",
+    "course": "ai-intro",
+    "education": "ماجستير الذكاء الاصطناعي",
+    "experience": "سنة واحدة في تحليل البيانات",
+    "interests": [
+      "nlp",
+      "ml"
+    ],
+    "registrationDate": "2025-07-12T15:47:11.272Z"
+  },
+  {
+    "id": 25,
+    "name": "مستخدم 25",
+    "email": "user25@example.com",
+    "phone": "+966 547345331",
+    "course": "data-science",
+    "education": "ماجستير الذكاء الاصطناعي",
+    "experience": "لا توجد خبرة سابقة في المجال",
+    "interests": [
+      "robotics",
+      "data",
+      "ml"
+    ],
+    "registrationDate": "2025-07-11T15:47:11.272Z"
+  },
+  {
+    "id": 26,
+    "name": "مستخدم 26",
+    "email": "user26@example.com",
+    "phone": "+966 548706465",
+    "course": "machine-learning",
+    "education": "ماجستير الذكاء الاصطناعي",
+    "experience": "سنة واحدة في تحليل البيانات",
+    "interests": [
+      "data"
+    ],
+    "registrationDate": "2025-06-21T15:47:11.272Z"
+  },
+  {
+    "id": 27,
+    "name": "مستخدم 27",
+    "email": "user27@example.com",
+    "phone": "+966 537726324",
+    "course": "machine-learning",
+    "education": "دبلوم برمجة",
+    "experience": "عملت في شركات تقنية كبرى",
+    "interests": [
+      "ai",
+      "ml",
+      "nlp",
+      "robotics"
+    ],
+    "registrationDate": "2025-06-23T15:47:11.272Z"
+  },
+  {
+    "id": 28,
+    "name": "مستخدم 28",
+    "email": "user28@example.com",
+    "phone": "+966 519919354",
+    "course": "data-science",
+    "education": "دكتوراه علوم البيانات",
+    "experience": "عملت في شركات تقنية كبرى",
+    "interests": [
+      "nlp",
+      "ml"
+    ],
+    "registrationDate": "2025-07-15T15:47:11.272Z"
+  },
+  {
+    "id": 29,
+    "name": "مستخدم 29",
+    "email": "user29@example.com",
+    "phone": "+966 542034356",
+    "course": "machine-learning",
+    "education": "بكالوريوس هندسة",
+    "experience": "سنة واحدة في تحليل البيانات",
+    "interests": [
+      "ai",
+      "ml",
+      "robotics",
+      "nlp"
+    ],
+    "registrationDate": "2025-07-17T15:47:11.272Z"
+  },
+  {
+    "id": 30,
+    "name": "مستخدم 30",
+    "email": "user30@example.com",
+    "phone": "+966 565374261",
+    "course": "data-science",
+    "education": "بكالوريوس هندسة",
+    "experience": "3 سنوات في تطوير البرمجيات",
+    "interests": [
+      "nlp"
+    ],
+    "registrationDate": "2025-07-12T15:47:11.272Z"
+  },
+  {
+    "id": 31,
+    "name": "مستخدم 31",
+    "email": "user31@example.com",
+    "phone": "+966 564156196",
+    "course": "ai-intro",
+    "education": "بكالوريوس علوم الحاسب",
+    "experience": "عملت في شركات تقنية كبرى",
+    "interests": [
+      "ml"
+    ],
+    "registrationDate": "2025-06-22T15:47:11.272Z"
+  },
+  {
+    "id": 32,
+    "name": "مستخدم 32",
+    "email": "user32@example.com",
+    "phone": "+966 531986921",
+    "course": "nlp",
+    "education": "بكالوريوس هندسة",
+    "experience": "لا توجد خبرة سابقة في المجال",
+    "interests": [
+      "nlp",
+      "ai",
+      "robotics"
+    ],
+    "registrationDate": "2025-07-08T15:47:11.272Z"
+  },
+  {
+    "id": 33,
+    "name": "مستخدم 33",
+    "email": "user33@example.com",
+    "phone": "+966 571615547",
+    "course": "deep-learning",
+    "education": "دكتوراه علوم البيانات",
+    "experience": "لا توجد خبرة سابقة في المجال",
+    "interests": [
+      "data",
+      "robotics",
+      "nlp"
+    ],
+    "registrationDate": "2025-07-02T15:47:11.272Z"
+  },
+  {
+    "id": 34,
+    "name": "مستخدم 34",
+    "email": "user34@example.com",
+    "phone": "+966 587236573",
+    "course": "ai-intro",
+    "education": "بكالوريوس هندسة",
+    "experience": "لا توجد خبرة سابقة في المجال",
+    "interests": [
+      "data",
+      "robotics",
+      "ai",
+      "ml",
+      "nlp"
+    ],
+    "registrationDate": "2025-07-05T15:47:11.272Z"
+  },
+  {
+    "id": 35,
+    "name": "مستخدم 35",
+    "email": "user35@example.com",
+    "phone": "+966 588379267",
+    "course": "ai-intro",
+    "education": "بكالوريوس هندسة",
+    "experience": "لا توجد خبرة سابقة في المجال",
+    "interests": [
+      "ml",
+      "data",
+      "nlp"
+    ],
+    "registrationDate": "2025-06-23T15:47:11.272Z"
+  },
+  {
+    "id": 36,
+    "name": "مستخدم 36",
+    "email": "user36@example.com",
+    "phone": "+966 517665154",
+    "course": "nlp",
+    "education": "دكتوراه علوم البيانات",
+    "experience": "سنة واحدة في تحليل البيانات",
+    "interests": [
+      "ai",
+      "ml",
+      "nlp",
+      "data",
+      "robotics"
+    ],
+    "registrationDate": "2025-07-16T15:47:11.272Z"
+  },
+  {
+    "id": 37,
+    "name": "مستخدم 37",
+    "email": "user37@example.com",
+    "phone": "+966 555644583",
+    "course": "ai-intro",
+    "education": "ماجستير الذكاء الاصطناعي",
+    "experience": "لا توجد خبرة سابقة في المجال",
+    "interests": [
+      "nlp",
+      "ml",
+      "ai"
+    ],
+    "registrationDate": "2025-06-21T15:47:11.272Z"
+  },
+  {
+    "id": 38,
+    "name": "مستخدم 38",
+    "email": "user38@example.com",
+    "phone": "+966 572516675",
+    "course": "machine-learning",
+    "education": "دكتوراه علوم البيانات",
+    "experience": "عملت في شركات تقنية كبرى",
+    "interests": [
+      "robotics",
+      "ml",
+      "ai",
+      "data"
+    ],
+    "registrationDate": "2025-07-05T15:47:11.272Z"
+  },
+  {
+    "id": 39,
+    "name": "مستخدم 39",
+    "email": "user39@example.com",
+    "phone": "+966 598502115",
+    "course": "deep-learning",
+    "education": "ماجستير الذكاء الاصطناعي",
+    "experience": "لا توجد خبرة سابقة في المجال",
+    "interests": [
+      "data",
+      "robotics",
+      "nlp"
+    ],
+    "registrationDate": "2025-06-26T15:47:11.272Z"
+  },
+  {
+    "id": 40,
+    "name": "مستخدم 40",
+    "email": "user40@example.com",
+    "phone": "+966 580273322",
+    "course": "deep-learning",
+    "education": "دكتوراه علوم البيانات",
+    "experience": "خبرة في مشاريع الذكاء الاصطناعي",
+    "interests": [
+      "data",
+      "ai",
+      "robotics"
+    ],
+    "registrationDate": "2025-07-18T15:47:11.272Z"
+  },
+  {
+    "id": 41,
+    "name": "مستخدم 41",
+    "email": "user41@example.com",
+    "phone": "+966 565742132",
+    "course": "deep-learning",
+    "education": "دكتوراه علوم البيانات",
+    "experience": "خبرة في مشاريع الذكاء الاصطناعي",
+    "interests": [
+      "nlp",
+      "ml"
+    ],
+    "registrationDate": "2025-06-20T15:47:11.272Z"
+  },
+  {
+    "id": 42,
+    "name": "مستخدم 42",
+    "email": "user42@example.com",
+    "phone": "+966 526227384",
+    "course": "data-science",
+    "education": "ماجستير الذكاء الاصطناعي",
+    "experience": "لا توجد خبرة سابقة في المجال",
+    "interests": [
+      "ai",
+      "nlp"
+    ],
+    "registrationDate": "2025-07-11T15:47:11.272Z"
+  },
+  {
+    "id": 43,
+    "name": "مستخدم 43",
+    "email": "user43@example.com",
+    "phone": "+966 537430589",
+    "course": "deep-learning",
+    "education": "دبلوم برمجة",
+    "experience": "لا توجد خبرة سابقة في المجال",
+    "interests": [
+      "nlp"
+    ],
+    "registrationDate": "2025-06-21T15:47:11.272Z"
+  },
+  {
+    "id": 44,
+    "name": "مستخدم 44",
+    "email": "user44@example.com",
+    "phone": "+966 581279761",
+    "course": "ai-intro",
+    "education": "بكالوريوس هندسة",
+    "experience": "سنة واحدة في تحليل البيانات",
+    "interests": [
+      "data",
+      "ml",
+      "nlp",
+      "robotics"
+    ],
+    "registrationDate": "2025-07-05T15:47:11.272Z"
+  },
+  {
+    "id": 45,
+    "name": "مستخدم 45",
+    "email": "user45@example.com",
+    "phone": "+966 512355817",
+    "course": "nlp",
+    "education": "دبلوم برمجة",
+    "experience": "لا توجد خبرة سابقة في المجال",
+    "interests": [
+      "nlp",
+      "data",
+      "ml",
+      "ai"
+    ],
+    "registrationDate": "2025-07-16T15:47:11.272Z"
+  },
+  {
+    "id": 46,
+    "name": "مستخدم 46",
+    "email": "user46@example.com",
+    "phone": "+966 569285729",
+    "course": "nlp",
+    "education": "دكتوراه علوم البيانات",
+    "experience": "عملت في شركات تقنية كبرى",
+    "interests": [
+      "nlp",
+      "data",
+      "ai",
+      "ml",
+      "robotics"
+    ],
+    "registrationDate": "2025-07-04T15:47:11.272Z"
+  },
+  {
+    "id": 47,
+    "name": "مستخدم 47",
+    "email": "user47@example.com",
+    "phone": "+966 542449179",
+    "course": "deep-learning",
+    "education": "دكتوراه علوم البيانات",
+    "experience": "عملت في شركات تقنية كبرى",
+    "interests": [
+      "ai",
+      "ml",
+      "robotics",
+      "nlp",
+      "data"
+    ],
+    "registrationDate": "2025-07-11T15:47:11.272Z"
+  },
+  {
+    "id": 48,
+    "name": "مستخدم 48",
+    "email": "user48@example.com",
+    "phone": "+966 528443199",
+    "course": "machine-learning",
+    "education": "دبلوم برمجة",
+    "experience": "3 سنوات في تطوير البرمجيات",
+    "interests": [
+      "ml",
+      "ai",
+      "robotics",
+      "nlp"
+    ],
+    "registrationDate": "2025-06-23T15:47:11.272Z"
+  },
+  {
+    "id": 49,
+    "name": "مستخدم 49",
+    "email": "user49@example.com",
+    "phone": "+966 553229968",
+    "course": "nlp",
+    "education": "ماجستير الذكاء الاصطناعي",
+    "experience": "سنة واحدة في تحليل البيانات",
+    "interests": [
+      "ml",
+      "ai",
+      "data"
+    ],
+    "registrationDate": "2025-07-04T15:47:11.272Z"
+  },
+  {
+    "id": 50,
+    "name": "مستخدم 50",
+    "email": "user50@example.com",
+    "phone": "+966 582946250",
+    "course": "machine-learning",
+    "education": "بكالوريوس هندسة",
+    "experience": "سنة واحدة في تحليل البيانات",
+    "interests": [
+      "ai",
+      "data",
+      "robotics"
+    ],
+    "registrationDate": "2025-06-21T15:47:11.272Z"
+  }
+]
