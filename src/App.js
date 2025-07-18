@@ -6,12 +6,13 @@ import AdminPanel from "./components/AdminPanel";
 import { motion } from "framer-motion";
 
 function MainApp() {
-  const { isDarkMode, toggleDarkMode } = useTheme();
+  // We're using ThemeContext but don't need to toggle since we're always in dark mode
+  const { isDarkMode } = useTheme();
   const [showAdmin, setShowAdmin] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [adminPassword, setAdminPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  
+
   // Course data
   const courses = [
     {
@@ -70,16 +71,16 @@ function MainApp() {
           </h1>
           <div className="flex items-center gap-4">
             {!showAdmin && !showAdminLogin && (
-              <button 
-                onClick={handleAdminClick} 
+              <button
+                onClick={handleAdminClick}
                 className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-900 hover:bg-gray-800"
               >
                 تسجيل الدخول
               </button>
             )}
             {showAdmin && (
-              <button 
-                onClick={handleBackToHome} 
+              <button
+                onClick={handleBackToHome}
                 className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-900 hover:bg-gray-800"
               >
                 العودة للرئيسية
@@ -91,7 +92,7 @@ function MainApp() {
 
       {showAdminLogin && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-gray-900 p-8 rounded-xl shadow-2xl max-w-md w-full"
@@ -154,8 +155,8 @@ function MainApp() {
             </h3>
             <div className="grid md:grid-cols-2 gap-8">
               {courses.map((course, idx) => (
-                <div 
-                  key={idx} 
+                <div
+                  key={idx}
                   className="p-6 rounded-xl shadow-lg bg-gray-900 hover:bg-gray-800 transition-colors duration-300 border border-gray-800"
                 >
                   <div className="text-4xl mb-4">{course.icon}</div>
@@ -163,8 +164,8 @@ function MainApp() {
                   <p className="mb-4">{course.desc}</p>
                   <div className="flex flex-wrap gap-2">
                     {course.tools.map((tool, i) => (
-                      <span 
-                        key={i} 
+                      <span
+                        key={i}
                         className="text-sm px-3 py-1 rounded-full bg-gray-800 text-blue-300"
                       >
                         {tool}
