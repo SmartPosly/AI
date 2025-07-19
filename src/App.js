@@ -244,7 +244,7 @@ function MainApp() {
               </div>
               <div className="p-4 rounded-lg bg-gray-800">
                 <h4 className="font-bold mb-2">ما هي طرق الدفع المتاحة؟</h4>
-                <p>يمكنك الدفع عبر التحويل البنكي أو البطاقة الائتمانية أو المحافظ الإلكترونية.</p>
+                <p>يمكنك الدفع عبر البطاقة الائتمانية والتطبيقات المصرفية (ادفع لي , سداد, تداول)</p>
               </div>
               <div className="p-4 rounded-lg bg-gray-800">
                 <h4 className="font-bold mb-2">كيف يمكنني التواصل للاستفسار؟</h4>
