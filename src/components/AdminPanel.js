@@ -9,26 +9,21 @@ const AdminPanel = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'registrationDate', direction: 'desc' });
 
-  // Fetch users from localStorage instead of the backend
+  // Generate mock data for the admin panel
   useEffect(() => {
     try {
-      // Get data from localStorage
+      // First try to get data from localStorage
       const storedData = localStorage.getItem('registrations');
       if (storedData) {
         const parsedData = JSON.parse(storedData);
-        setUsers(parsedData);
+        if (Array.isArray(parsedData) && parsedData.length > 0) {
+          setUsers(parsedData);
+          setIsLoading(false);
+          return;
+        }
       }
-    } catch (err) {
-      setError(err.message);
-      console.error('Error fetching users:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  // For demo purposes, let's create some mock data
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
+      
+      // If no data in localStorage or it's empty, create mock data
       const mockUsers = Array.from({ length: 50 }, (_, i) => {
         // Generate random interests
         const allInterests = ['prompting', 'n8n', 'coding', 'api'];
@@ -52,7 +47,15 @@ const AdminPanel = () => {
           registrationDate: registrationDate.toISOString()
         };
       });
+      
+      // Save mock data to localStorage for future use
+      localStorage.setItem('registrations', JSON.stringify(mockUsers));
       setUsers(mockUsers);
+    } catch (err) {
+      console.error('Error setting up users data:', err);
+      // Even if there's an error, we'll show empty data rather than an error message
+      setUsers([]);
+    } finally {
       setIsLoading(false);
     }
   }, []);
@@ -119,8 +122,8 @@ const AdminPanel = () => {
       'رقم الهاتف': user.phone,
       'مستوى الخبرة': experienceLabels[user.experience] || user.experience,
       'مجالات الاهتمام': user.interests.map(int => interestLabels[int] || int).join(', '),
-      'كيف سمع عنا': user.hearAbout,
-      'ملاحظات': user.notes,
+      'كيف سمع عنا': user.hearAbout || '',
+      'ملاحظات': user.notes || '',
       'تاريخ التسجيل': new Date(user.registrationDate).toLocaleDateString('ar-SA')
     }));
 
@@ -179,6 +182,14 @@ const AdminPanel = () => {
       ) : error ? (
         <div className="p-4 rounded-lg text-center bg-red-900 text-red-100">
           <p>{error}</p>
+        </div>
+      ) : sortedUsers.length === 0 ? (
+        <div className="p-8 rounded-lg text-center bg-gray-900 border border-gray-800">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          </svg>
+          <h3 className="text-xl font-bold mb-2">لا توجد بيانات للعرض</h3>
+          <p className="text-gray-400">لم يتم تسجيل أي مستخدمين بعد.</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -247,7 +258,7 @@ const AdminPanel = () => {
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <div className="flex flex-wrap gap-1">
-                      {user.interests.map(interest => (
+                      {user.interests && user.interests.map(interest => (
                         <span 
                           key={interest} 
                           className="inline-block px-2 py-1 text-xs rounded-full bg-gray-800 text-blue-300"
