@@ -10,6 +10,8 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+
+// Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'build')));
 
 // Data file path
@@ -48,11 +50,21 @@ const saveUsers = (users) => {
   }
 };
 
+// API health check
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'API is running' });
+});
+
 // API Routes
 // Get all users
 app.get('/api/users', (req, res) => {
-  const users = getUsers();
-  res.json(users);
+  try {
+    const users = getUsers();
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
 });
 
 // Register a new user
@@ -82,14 +94,15 @@ app.post('/api/register', (req, res) => {
 app.get('/api/export', (req, res) => {
   try {
     const users = getUsers();
-    res.json({ success: true, data: users });
+    res.status(200).json({ success: true, data: users });
   } catch (error) {
     console.error('Error exporting users:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
-// Serve React app for any other routes
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
@@ -98,3 +111,5 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+module.exports = app;

@@ -9,25 +9,21 @@ const AdminPanel = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'registrationDate', direction: 'desc' });
 
-  // Fetch users from the backend
+  // Fetch users from localStorage instead of the backend
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch('/api/users');
-        if (!response.ok) {
-          throw new Error('Failed to fetch users');
-        }
-        const data = await response.json();
-        setUsers(data);
-      } catch (err) {
-        setError(err.message);
-        console.error('Error fetching users:', err);
-      } finally {
-        setIsLoading(false);
+    try {
+      // Get data from localStorage
+      const storedData = localStorage.getItem('registrations');
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        setUsers(parsedData);
       }
-    };
-
-    fetchUsers();
+    } catch (err) {
+      setError(err.message);
+      console.error('Error fetching users:', err);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   // For demo purposes, let's create some mock data
