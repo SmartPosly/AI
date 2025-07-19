@@ -72,12 +72,20 @@ function MainApp() {
           </h1>
           <div className="flex items-center gap-4">
             {!showAdmin && !showAdminLogin && (
-              <button
-                onClick={handleAdminClick}
-                className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-900 hover:bg-gray-800"
-              >
-                تسجيل الدخول
-              </button>
+              <>
+                <a
+                  href="#register"
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-green-600 hover:bg-green-700 text-white"
+                >
+                  سجل الآن
+                </a>
+                <button
+                  onClick={handleAdminClick}
+                  className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-900 hover:bg-gray-800"
+                >
+                  تسجيل الدخول
+                </button>
+              </>
             )}
             {showAdmin && (
               <button
