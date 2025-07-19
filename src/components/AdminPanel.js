@@ -319,6 +319,13 @@ const AdminPanel = () => {
                 <th 
                   scope="col" 
                   className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer"
+                  onClick={() => requestSort('notes')}
+                >
+                  ملاحظات أو استفسارات {sortConfig.key === 'notes' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
+                <th 
+                  scope="col" 
+                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer"
                   onClick={() => requestSort('registrationDate')}
                 >
                   تاريخ التسجيل {sortConfig.key === 'registrationDate' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
@@ -346,6 +353,17 @@ const AdminPanel = () => {
                         </span>
                       ))}
                     </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm">
+                    {user.notes ? (
+                      <div className="max-w-xs overflow-hidden">
+                        <p className={user.notes.length > 50 ? "line-clamp-2 hover:line-clamp-none cursor-pointer" : ""}>
+                          {user.notes}
+                        </p>
+                      </div>
+                    ) : (
+                      <span className="text-gray-500">-</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     {formatDate(user.registrationDate)}
