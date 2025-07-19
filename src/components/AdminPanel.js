@@ -14,28 +14,36 @@ const AdminPanel = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Check if data was explicitly reset
+        // Always check for reset flag first
         const wasReset = localStorage.getItem('registrationsReset') === 'true';
+        console.log('Reset flag status:', wasReset);
         
-        // First try to get data from localStorage
-        const storedData = localStorage.getItem('registrations');
-        if (storedData) {
-          const parsedData = JSON.parse(storedData);
-          if (Array.isArray(parsedData) && parsedData.length > 0) {
-            setUsers(parsedData);
-            setIsLoading(false);
-            return;
-          }
-        }
-        
-        // If data was reset, don't regenerate mock data
         if (wasReset) {
+          console.log('Data was reset, keeping list empty');
           setUsers([]);
           setIsLoading(false);
           return;
         }
         
-        // If no data in localStorage or it's empty, create mock data
+        // If not reset, try to get data from localStorage
+        const storedData = localStorage.getItem('registrations');
+        if (storedData) {
+          try {
+            const parsedData = JSON.parse(storedData);
+            if (Array.isArray(parsedData) && parsedData.length > 0) {
+              console.log('Found existing data in localStorage');
+              setUsers(parsedData);
+              setIsLoading(false);
+              return;
+            }
+          } catch (parseError) {
+            console.error('Error parsing localStorage data:', parseError);
+            // Continue to mock data generation if parsing fails
+          }
+        }
+        
+        // Only generate mock data if not reset and no valid data in localStorage
+        console.log('Generating mock data');
         const mockUsers = Array.from({ length: 50 }, (_, i) => {
           // Generate random interests
           const allInterests = ['prompting', 'n8n', 'coding', 'api'];
@@ -62,7 +70,6 @@ const AdminPanel = () => {
         
         // Save mock data to localStorage for future use
         localStorage.setItem('registrations', JSON.stringify(mockUsers));
-        localStorage.removeItem('registrationsReset'); // Clear the reset flag
         setUsers(mockUsers);
       } catch (err) {
         console.error('Error setting up users data:', err);
@@ -175,9 +182,20 @@ const AdminPanel = () => {
       setIsResetting(true);
       
       try {
-        // Clear localStorage and set reset flag
+        // First set the reset flag, then clear the data
+        localStorage.setItem('registrationsReset', 'true');
         localStorage.removeItem('registrations');
-        localStorage.setItem('registrationsReset', 'true'); // Set flag to prevent regenerating data
+        
+        // Double-check that the flag was set
+        const flagSet = localStorage.getItem('registrationsReset') === 'true';
+        console.log('Reset flag set:', flagSet);
+        
+        if (!flagSet) {
+          // If flag wasn't set, try again with a different approach
+          window.sessionStorage.setItem('registrationsReset', 'true');
+          console.log('Using session storage as fallback');
+        }
+        
         console.log('Registrations data cleared successfully');
         
         // Show loading state briefly
@@ -414,9 +432,31 @@ const AdminPanel = () => {
 // Function to completely reset the system (for development purposes)
 // Can be called from browser console: window.resetRegistrationSystem()
 window.resetRegistrationSystem = () => {
-  localStorage.removeItem('registrations');
-  localStorage.removeItem('registrationsReset');
-  console.log('Registration system completely reset. Refresh the page to generate new mock data.');
+  try {
+    // Clear all related storage
+    localStorage.removeItem('registrations');
+    localStorage.removeItem('registrationsReset');
+    sessionStorage.removeItem('registrationsReset');
+    
+    // Set a flag to force regeneration
+    localStorage.setItem('forceRegenerate', 'true');
+    
+    console.log('Registration system completely reset. Refresh the page to generate new mock data.');
+    console.log('To verify reset status:');
+    console.log('- localStorage.registrationsReset =', localStorage.getItem('registrationsReset'));
+    console.log('- localStorage.registrations =', localStorage.getItem('registrations'));
+    
+    return {
+      success: true,
+      message: 'System reset complete. Please refresh the page.'
+    };
+  } catch (error) {
+    console.error('Error during system reset:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
 };
 
 export default AdminPanel;

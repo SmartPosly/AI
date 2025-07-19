@@ -49,6 +49,16 @@ function MainApp() {
   const handleAdminLogin = (e) => {
     e.preventDefault();
     if (adminPassword === "admin3506403") {
+      // Check for reset flag in both localStorage and sessionStorage
+      const wasReset = localStorage.getItem('registrationsReset') === 'true' || 
+                       sessionStorage.getItem('registrationsReset') === 'true';
+      
+      // If the flag exists, ensure it's properly set in localStorage
+      if (wasReset) {
+        localStorage.setItem('registrationsReset', 'true');
+        console.log('Reset flag detected and preserved during login');
+      }
+      
       setShowAdmin(true);
       setShowAdminLogin(false);
       setAdminPassword("");
