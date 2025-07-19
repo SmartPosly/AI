@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://ai-courses.smartpos.ly/sitemap.xml
+Sitemap: https://ai.smartpos.ly/sitemap.xml
