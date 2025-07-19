@@ -117,13 +117,18 @@ const AdminPanel = () => {
     'api': 'استخدام واجهات برمجة الذكاء الاصطناعي'
   };
 
-  // Format date in Gregorian (AD) format
+  // Format date in Gregorian (AD) format with time
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit'
+    }) + ' ' + date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
     });
   };
 
