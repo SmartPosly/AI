@@ -9,55 +9,59 @@ const AdminPanel = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'registrationDate', direction: 'desc' });
 
-  // Generate mock data for the admin panel
+  // Get user data from localStorage or generate mock data
   useEffect(() => {
-    try {
-      // First try to get data from localStorage
-      const storedData = localStorage.getItem('registrations');
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        if (Array.isArray(parsedData) && parsedData.length > 0) {
-          setUsers(parsedData);
-          setIsLoading(false);
-          return;
+    const loadData = async () => {
+      try {
+        // First try to get data from localStorage
+        const storedData = localStorage.getItem('registrations');
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          if (Array.isArray(parsedData) && parsedData.length > 0) {
+            setUsers(parsedData);
+            setIsLoading(false);
+            return;
+          }
         }
+        
+        // If no data in localStorage or it's empty, create mock data
+        const mockUsers = Array.from({ length: 50 }, (_, i) => {
+          // Generate random interests
+          const allInterests = ['prompting', 'n8n', 'coding', 'api'];
+          const interestCount = Math.floor(Math.random() * 4) + 1;
+          const shuffledInterests = [...allInterests].sort(() => 0.5 - Math.random());
+          const interests = shuffledInterests.slice(0, interestCount);
+          
+          // Generate random registration date within the last 30 days
+          const registrationDate = new Date();
+          registrationDate.setDate(registrationDate.getDate() - Math.floor(Math.random() * 30));
+          
+          return {
+            id: i + 1,
+            name: `مستخدم ${i + 1}`,
+            email: `user${i + 1}@example.com`,
+            phone: `+966 5${Math.floor(10000000 + Math.random() * 90000000)}`,
+            experience: ['beginner', 'intermediate', 'advanced'][Math.floor(Math.random() * 3)],
+            interests,
+            hearAbout: ['جوجل', 'تويتر', 'فيسبوك', 'صديق', 'إنستغرام'][Math.floor(Math.random() * 5)],
+            notes: Math.random() > 0.7 ? 'أريد معرفة المزيد عن الدورة وطرق الدفع المتاحة.' : '',
+            registrationDate: registrationDate.toISOString()
+          };
+        });
+        
+        // Save mock data to localStorage for future use
+        localStorage.setItem('registrations', JSON.stringify(mockUsers));
+        setUsers(mockUsers);
+      } catch (err) {
+        console.error('Error setting up users data:', err);
+        // Even if there's an error, we'll show empty data rather than an error message
+        setUsers([]);
+      } finally {
+        setIsLoading(false);
       }
-      
-      // If no data in localStorage or it's empty, create mock data
-      const mockUsers = Array.from({ length: 50 }, (_, i) => {
-        // Generate random interests
-        const allInterests = ['prompting', 'n8n', 'coding', 'api'];
-        const interestCount = Math.floor(Math.random() * 4) + 1;
-        const shuffledInterests = [...allInterests].sort(() => 0.5 - Math.random());
-        const interests = shuffledInterests.slice(0, interestCount);
-        
-        // Generate random registration date within the last 30 days
-        const registrationDate = new Date();
-        registrationDate.setDate(registrationDate.getDate() - Math.floor(Math.random() * 30));
-        
-        return {
-          id: i + 1,
-          name: `مستخدم ${i + 1}`,
-          email: `user${i + 1}@example.com`,
-          phone: `+966 5${Math.floor(10000000 + Math.random() * 90000000)}`,
-          experience: ['beginner', 'intermediate', 'advanced'][Math.floor(Math.random() * 3)],
-          interests,
-          hearAbout: ['جوجل', 'تويتر', 'فيسبوك', 'صديق', 'إنستغرام'][Math.floor(Math.random() * 5)],
-          notes: Math.random() > 0.7 ? 'أريد معرفة المزيد عن الدورة وطرق الدفع المتاحة.' : '',
-          registrationDate: registrationDate.toISOString()
-        };
-      });
-      
-      // Save mock data to localStorage for future use
-      localStorage.setItem('registrations', JSON.stringify(mockUsers));
-      setUsers(mockUsers);
-    } catch (err) {
-      console.error('Error setting up users data:', err);
-      // Even if there's an error, we'll show empty data rather than an error message
-      setUsers([]);
-    } finally {
-      setIsLoading(false);
-    }
+    };
+
+    loadData();
   }, []);
 
   // Handle sorting

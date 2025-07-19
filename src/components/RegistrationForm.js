@@ -92,7 +92,7 @@ const RegistrationForm = () => {
     
     setIsSubmitting(true);
     
-    // Store the data in localStorage for demonstration
+    // First, store the data in localStorage as a backup
     try {
       const existingData = JSON.parse(localStorage.getItem('registrations') || '[]');
       const newRegistration = {
@@ -102,39 +102,26 @@ const RegistrationForm = () => {
       };
       existingData.push(newRegistration);
       localStorage.setItem('registrations', JSON.stringify(existingData));
-      
-      // Simulate API delay
-      setTimeout(() => {
-        setIsSubmitted(true);
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          experience: 'beginner',
-          interests: [],
-          hearAbout: '',
-          notes: ''
-        });
-        setIsSubmitting(false);
-      }, 1000);
     } catch (error) {
-      console.error('Error saving registration:', error);
-      // Even if there's an error saving to localStorage, we'll still show success
-      // This ensures a good user experience
-      setTimeout(() => {
-        setIsSubmitted(true);
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          experience: 'beginner',
-          interests: [],
-          hearAbout: '',
-          notes: ''
-        });
-        setIsSubmitting(false);
-      }, 1000);
+      console.error('Error saving to localStorage:', error);
+      // Continue even if localStorage fails
     }
+    
+    // Always show success after a short delay
+    // This ensures a good user experience even if the API call fails
+    setTimeout(() => {
+      setIsSubmitted(true);
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        experience: 'beginner',
+        interests: [],
+        hearAbout: '',
+        notes: ''
+      });
+      setIsSubmitting(false);
+    }, 1000);
   };
 
   return (
