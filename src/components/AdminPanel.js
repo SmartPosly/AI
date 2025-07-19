@@ -117,6 +117,16 @@ const AdminPanel = () => {
     'api': 'استخدام واجهات برمجة الذكاء الاصطناعي'
   };
 
+  // Format date in Gregorian (AD) format
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  };
+
   // Export to Excel
   const exportToExcel = () => {
     // Format data for Excel
@@ -129,7 +139,7 @@ const AdminPanel = () => {
       'مجالات الاهتمام': user.interests.map(int => interestLabels[int] || int).join(', '),
       'كيف سمع عنا': user.hearAbout || '',
       'ملاحظات': user.notes || '',
-      'تاريخ التسجيل': new Date(user.registrationDate).toLocaleDateString('ar-SA')
+      'تاريخ التسجيل': formatDate(user.registrationDate)
     }));
 
     // Create worksheet
@@ -162,7 +172,7 @@ const AdminPanel = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <h2 className="text-2xl font-bold text-blue-400">
           لوحة الإدارة - المسجلين في الدورة
         </h2>
@@ -333,12 +343,26 @@ const AdminPanel = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {new Date(user.registrationDate).toLocaleDateString('ar-SA')}
+                    {formatDate(user.registrationDate)}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Reset Button at Bottom */}
+      {users.length > 0 && !isResetting && (
+        <div className="mt-8 text-center">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={resetList}
+            className="px-6 py-3 rounded-lg font-medium bg-red-600 hover:bg-red-700 text-white"
+          >
+            إعادة تعيين القائمة بعد التصدير
+          </motion.button>
         </div>
       )}
     </div>
