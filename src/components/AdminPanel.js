@@ -14,6 +14,9 @@ const AdminPanel = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
+        // Check if data was explicitly reset
+        const wasReset = localStorage.getItem('registrationsReset') === 'true';
+        
         // First try to get data from localStorage
         const storedData = localStorage.getItem('registrations');
         if (storedData) {
@@ -23,6 +26,13 @@ const AdminPanel = () => {
             setIsLoading(false);
             return;
           }
+        }
+        
+        // If data was reset, don't regenerate mock data
+        if (wasReset) {
+          setUsers([]);
+          setIsLoading(false);
+          return;
         }
         
         // If no data in localStorage or it's empty, create mock data
@@ -52,6 +62,7 @@ const AdminPanel = () => {
         
         // Save mock data to localStorage for future use
         localStorage.setItem('registrations', JSON.stringify(mockUsers));
+        localStorage.removeItem('registrationsReset'); // Clear the reset flag
         setUsers(mockUsers);
       } catch (err) {
         console.error('Error setting up users data:', err);
@@ -163,14 +174,22 @@ const AdminPanel = () => {
     if (window.confirm('هل أنت متأكد من رغبتك في إعادة تعيين قائمة المسجلين؟ سيتم حذف جميع البيانات.')) {
       setIsResetting(true);
       
-      // Clear localStorage
-      localStorage.removeItem('registrations');
-      
-      // Show loading state briefly
-      setTimeout(() => {
-        setUsers([]);
+      try {
+        // Clear localStorage and set reset flag
+        localStorage.removeItem('registrations');
+        localStorage.setItem('registrationsReset', 'true'); // Set flag to prevent regenerating data
+        console.log('Registrations data cleared successfully');
+        
+        // Show loading state briefly
+        setTimeout(() => {
+          setUsers([]);
+          setIsResetting(false);
+        }, 1000);
+      } catch (error) {
+        console.error('Error clearing registrations:', error);
+        alert('حدث خطأ أثناء إعادة تعيين القائمة. يرجى المحاولة مرة أخرى.');
         setIsResetting(false);
-      }, 1000);
+      }
     }
   };
 
@@ -178,7 +197,7 @@ const AdminPanel = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-        <h2 className="text-2xl font-bold text-blue-400">
+        <h2 className="text-2xl font-bold text-purple-800">
           لوحة الإدارة - المسجلين في الدورة
         </h2>
         
@@ -190,23 +209,23 @@ const AdminPanel = () => {
             disabled={users.length === 0 || isResetting}
             className={`px-4 py-2 rounded-lg font-medium ${
               users.length === 0 || isResetting
-                ? 'bg-gray-600 cursor-not-allowed'
-                : 'bg-green-600 hover:bg-green-700'
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-purple-700 hover:bg-purple-800'
             } text-white`}
           >
             تصدير إلى Excel
           </motion.button>
           
           <motion.button
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.05, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)" }}
             whileTap={{ scale: 0.95 }}
             onClick={resetList}
             disabled={users.length === 0 || isResetting}
             className={`px-4 py-2 rounded-lg font-medium ${
               users.length === 0 || isResetting
-                ? 'bg-gray-600 cursor-not-allowed'
-                : 'bg-red-600 hover:bg-red-700'
-            } text-white`}
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-red-500 hover:bg-red-600'
+            } text-white shadow-sm`}
           >
             {isResetting ? (
               <div className="flex items-center justify-center">
@@ -235,7 +254,7 @@ const AdminPanel = () => {
       </div>
 
       {/* Search and Filter */}
-      <div className="mb-6 p-4 rounded-lg shadow-md bg-gray-900 border border-gray-800">
+      <div className="mb-6 p-4 rounded-lg shadow-md bg-white border border-gray-200">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-grow">
             <input
@@ -243,12 +262,12 @@ const AdminPanel = () => {
               placeholder="بحث بالاسم أو البريد الإلكتروني أو رقم الهاتف..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-3 rounded-lg border bg-gray-800 border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 rounded-lg border bg-white border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
               disabled={isResetting}
             />
           </div>
           <div className="flex items-center">
-            <span className="ml-2">عدد المسجلين: {sortedUsers.length}</span>
+            <span className="ml-2 text-gray-700">عدد المسجلين: <span className="font-bold text-purple-800">{sortedUsers.length}</span></span>
           </div>
         </div>
       </div>
@@ -256,90 +275,90 @@ const AdminPanel = () => {
       {/* Users Table */}
       {isLoading || isResetting ? (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-700"></div>
         </div>
       ) : error ? (
-        <div className="p-4 rounded-lg text-center bg-red-900 text-red-100">
+        <div className="p-4 rounded-lg text-center bg-red-50 text-red-700 border border-red-200">
           <p>{error}</p>
         </div>
       ) : sortedUsers.length === 0 ? (
-        <div className="p-8 rounded-lg text-center bg-gray-900 border border-gray-800">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="p-8 rounded-lg text-center bg-gray-50 border border-gray-200">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
           </svg>
-          <h3 className="text-xl font-bold mb-2">لا توجد بيانات للعرض</h3>
-          <p className="text-gray-400">لم يتم تسجيل أي مستخدمين بعد.</p>
+          <h3 className="text-xl font-bold mb-2 text-gray-700">لا توجد بيانات للعرض</h3>
+          <p className="text-gray-500">لم يتم تسجيل أي مستخدمين بعد.</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-gray-900">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
                 <th 
                   scope="col" 
-                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer text-gray-700"
                   onClick={() => requestSort('id')}
                 >
                   الرقم {sortConfig.key === 'id' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
                 <th 
                   scope="col" 
-                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer text-gray-700"
                   onClick={() => requestSort('name')}
                 >
                   الاسم {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
                 <th 
                   scope="col" 
-                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer text-gray-700"
                   onClick={() => requestSort('email')}
                 >
                   البريد الإلكتروني {sortConfig.key === 'email' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
                 <th 
                   scope="col" 
-                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer text-gray-700"
                   onClick={() => requestSort('phone')}
                 >
                   رقم الهاتف {sortConfig.key === 'phone' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
                 <th 
                   scope="col" 
-                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer text-gray-700"
                   onClick={() => requestSort('experience')}
                 >
                   مستوى الخبرة {sortConfig.key === 'experience' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
                 <th 
                   scope="col" 
-                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider"
+                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-700"
                 >
                   مجالات الاهتمام
                 </th>
                 <th 
                   scope="col" 
-                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer text-gray-700"
                   onClick={() => requestSort('notes')}
                 >
                   ملاحظات أو استفسارات {sortConfig.key === 'notes' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
                 <th 
                   scope="col" 
-                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer"
+                  className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider cursor-pointer text-gray-700"
                   onClick={() => requestSort('registrationDate')}
                 >
                   تاريخ التسجيل {sortConfig.key === 'registrationDate' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700">
+            <tbody className="divide-y divide-gray-200 bg-white">
               {sortedUsers.map((user) => (
-                <tr key={user.id} className="bg-gray-900 hover:bg-gray-800">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{user.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{user.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{user.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{user.phone}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                <tr key={user.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.phone}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                     {experienceLabels[user.experience] || user.experience}
                   </td>
                   <td className="px-6 py-4 text-sm">
@@ -347,14 +366,14 @@ const AdminPanel = () => {
                       {user.interests && user.interests.map(interest => (
                         <span 
                           key={interest} 
-                          className="inline-block px-2 py-1 text-xs rounded-full bg-gray-800 text-blue-300"
+                          className="inline-block px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800"
                         >
                           {interestLabels[interest] || interest}
                         </span>
                       ))}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm">
+                  <td className="px-6 py-4 text-sm text-gray-700">
                     {user.notes ? (
                       <div className="max-w-xs overflow-hidden">
                         <p className={user.notes.length > 50 ? "line-clamp-2 hover:line-clamp-none cursor-pointer" : ""}>
@@ -362,10 +381,10 @@ const AdminPanel = () => {
                         </p>
                       </div>
                     ) : (
-                      <span className="text-gray-500">-</span>
+                      <span className="text-gray-400">-</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                     {formatDate(user.registrationDate)}
                   </td>
                 </tr>
@@ -379,10 +398,10 @@ const AdminPanel = () => {
       {users.length > 0 && !isResetting && (
         <div className="mt-8 text-center">
           <motion.button
-            whileHover={{ scale: 1.05 }}
+            whileHover={{ scale: 1.05, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)" }}
             whileTap={{ scale: 0.95 }}
             onClick={resetList}
-            className="px-6 py-3 rounded-lg font-medium bg-red-600 hover:bg-red-700 text-white"
+            className="px-8 py-4 rounded-lg font-bold bg-red-500 hover:bg-red-600 text-white shadow-md"
           >
             إعادة تعيين القائمة بعد التصدير
           </motion.button>
@@ -390,6 +409,14 @@ const AdminPanel = () => {
       )}
     </div>
   );
+};
+
+// Function to completely reset the system (for development purposes)
+// Can be called from browser console: window.resetRegistrationSystem()
+window.resetRegistrationSystem = () => {
+  localStorage.removeItem('registrations');
+  localStorage.removeItem('registrationsReset');
+  console.log('Registration system completely reset. Refresh the page to generate new mock data.');
 };
 
 export default AdminPanel;

@@ -11,7 +11,7 @@ const RegistrationForm = () => {
     hearAbout: '',
     notes: ''
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formErrors, setFormErrors] = useState({});
@@ -35,7 +35,7 @@ const RegistrationForm = () => {
       ...prev,
       [name]: value
     }));
-    
+
     // Clear error when user starts typing
     if (formErrors[name]) {
       setFormErrors(prev => ({
@@ -47,7 +47,7 @@ const RegistrationForm = () => {
 
   const handleInterestChange = (e) => {
     const { value, checked } = e.target;
-    
+
     if (checked) {
       setFormData(prev => ({
         ...prev,
@@ -64,34 +64,41 @@ const RegistrationForm = () => {
   const validateForm = () => {
     const errors = {};
     if (!formData.name.trim()) errors.name = 'الاسم مطلوب';
-    
+
     if (!formData.email.trim()) {
       errors.email = 'البريد الإلكتروني مطلوب';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'البريد الإلكتروني غير صالح';
     }
-    
+
     if (!formData.phone.trim()) {
       errors.phone = 'رقم الهاتف مطلوب';
-    } else if (!/^\d{10,}$/.test(formData.phone.replace(/[+\s-]/g, ''))) {
-      errors.phone = 'رقم الهاتف غير صالح';
+    } else {
+      // Remove any non-digit characters
+      const cleanPhone = formData.phone.replace(/\D/g, '');
+      // Check if it's exactly 10 digits and starts with 091, 092, 093, 094, or 095
+      if (cleanPhone.length !== 10) {
+        errors.phone = 'رقم الهاتف يجب أن يتكون من 10 أرقام';
+      } else if (!/^09[1-5]/.test(cleanPhone)) {
+        errors.phone = 'رقم الهاتف يجب أن يبدأ بـ 091 أو 092 أو 093 أو 094 أو 095';
+      }
     }
-    
+
     if (formData.interests.length === 0) {
       errors.interests = 'يرجى اختيار مجال اهتمام واحد على الأقل';
     }
-    
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsSubmitting(true);
-    
+
     // First, store the data in localStorage as a backup
     try {
       const existingData = JSON.parse(localStorage.getItem('registrations') || '[]');
@@ -106,7 +113,7 @@ const RegistrationForm = () => {
       console.error('Error saving to localStorage:', error);
       // Continue even if localStorage fails
     }
-    
+
     // Always show success after a short delay
     // This ensures a good user experience even if the API call fails
     setTimeout(() => {
@@ -125,30 +132,45 @@ const RegistrationForm = () => {
   };
 
   return (
-    <div className="rounded-xl p-8 shadow-lg bg-gray-900 border border-gray-800">
+    <motion.div
+      className="rounded-xl p-8 shadow-lg bg-white border border-gray-200"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      whileHover={{ boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
+    >
       {isSubmitted ? (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="p-6 rounded-lg text-center bg-green-900 text-green-100"
+          className="p-6 rounded-lg text-center bg-purple-50 text-purple-900 border border-purple-200"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-purple-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h3 className="text-xl font-bold mb-2">تم التسجيل بنجاح!</h3>
-          <p>شكراً لتسجيلك في دورة أدوات الذكاء الاصطناعي. سنتواصل معك قريباً بخصوص تفاصيل الدورة وطرق الدفع.</p>
-          <button 
+          <h3 className="text-xl font-bold mb-2 text-purple-800">تم التسجيل بنجاح!</h3>
+          <p className="text-gray-700">شكراً لتسجيلك في دورة أدوات الذكاء الاصطناعي. سنتواصل معك قريباً بخصوص تفاصيل الدورة وطرق الدفع.</p>
+          <button
             onClick={() => setIsSubmitted(false)}
-            className="mt-4 px-6 py-2 rounded-lg font-medium bg-green-700 hover:bg-green-600"
+            className="mt-4 px-6 py-2 rounded-lg font-medium bg-purple-700 hover:bg-purple-600 text-white"
           >
             تسجيل آخر
           </button>
         </motion.div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ staggerChildren: 0.1, delayChildren: 0.2 }}
+          >
             {/* Name */}
-            <div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
               <label htmlFor="name" className="block mb-2 font-medium">الاسم الكامل <span className="text-red-500">*</span></label>
               <input
                 type="text"
@@ -156,13 +178,17 @@ const RegistrationForm = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`w-full p-3 rounded-lg border bg-gray-800 border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.name ? 'border-red-500' : ''}`}
+                className={`w-full p-3 rounded-lg border bg-white border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.name ? 'border-red-500' : ''}`}
               />
               {formErrors.name && <p className="mt-1 text-red-500 text-sm">{formErrors.name}</p>}
-            </div>
-            
+            </motion.div>
+
             {/* Email */}
-            <div>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
               <label htmlFor="email" className="block mb-2 font-medium">البريد الإلكتروني <span className="text-red-500">*</span></label>
               <input
                 type="email"
@@ -170,14 +196,18 @@ const RegistrationForm = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full p-3 rounded-lg border bg-gray-800 border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.email ? 'border-red-500' : ''}`}
+                className={`w-full p-3 rounded-lg border bg-white border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.email ? 'border-red-500' : ''}`}
               />
               {formErrors.email && <p className="mt-1 text-red-500 text-sm">{formErrors.email}</p>}
-            </div>
-          </div>
-          
+            </motion.div>
+          </motion.div>
+
           {/* Phone */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.2 }}
+          >
             <label htmlFor="phone" className="block mb-2 font-medium">رقم الهاتف <span className="text-red-500">*</span></label>
             <input
               type="tel"
@@ -185,33 +215,52 @@ const RegistrationForm = () => {
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              className={`w-full p-3 rounded-lg border bg-gray-800 border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${formErrors.phone ? 'border-red-500' : ''}`}
+              placeholder="09X XXXXXXX"
+              className={`w-full p-3 rounded-lg border bg-white border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.phone ? 'border-red-500' : ''}`}
             />
-            {formErrors.phone && <p className="mt-1 text-red-500 text-sm">{formErrors.phone}</p>}
-          </div>
-          
+            {formErrors.phone ? (
+              <p className="mt-1 text-red-500 text-sm">{formErrors.phone}</p>
+            ) : (
+              <p className="mt-1 text-gray-500 text-sm">يجب أن يبدأ الرقم بـ 091 أو 092 أو 093 أو 094 أو 095 ويتكون من 10 أرقام</p>
+            )}
+          </motion.div>
+
           {/* Experience Level */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+          >
             <label htmlFor="experience" className="block mb-2 font-medium">مستوى الخبرة <span className="text-red-500">*</span></label>
             <select
               id="experience"
               name="experience"
               value={formData.experience}
               onChange={handleChange}
-              className="w-full p-3 rounded-lg border bg-gray-800 border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 rounded-lg border bg-white border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               {experienceLevels.map(level => (
                 <option key={level.id} value={level.id}>{level.label}</option>
               ))}
             </select>
-          </div>
-          
+          </motion.div>
+
           {/* Interests */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.4 }}
+          >
             <label className="block mb-2 font-medium">مجالات الاهتمام <span className="text-red-500">*</span></label>
             <div className="space-y-2">
-              {interestOptions.map(option => (
-                <div key={option.id} className="flex items-center">
+              {interestOptions.map((option, index) => (
+                <motion.div
+                  key={option.id}
+                  className="flex items-center"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2, delay: 0.5 + (index * 0.1) }}
+                >
                   <input
                     type="checkbox"
                     id={`interest-${option.id}`}
@@ -219,17 +268,21 @@ const RegistrationForm = () => {
                     value={option.id}
                     checked={formData.interests.includes(option.id)}
                     onChange={handleInterestChange}
-                    className="ml-2 h-5 w-5 rounded bg-gray-800 border-gray-700 text-blue-500 focus:ring-2 focus:ring-blue-500"
+                    className="ml-2 h-5 w-5 rounded bg-white border-gray-300 text-purple-600 focus:ring-2 focus:ring-purple-500"
                   />
                   <label htmlFor={`interest-${option.id}`}>{option.label}</label>
-                </div>
+                </motion.div>
               ))}
             </div>
             {formErrors.interests && <p className="mt-1 text-red-500 text-sm">{formErrors.interests}</p>}
-          </div>
-          
+          </motion.div>
+
           {/* How did you hear about us */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.9 }}
+          >
             <label htmlFor="hearAbout" className="block mb-2 font-medium">كيف سمعت عنا؟</label>
             <input
               type="text"
@@ -237,12 +290,16 @@ const RegistrationForm = () => {
               name="hearAbout"
               value={formData.hearAbout}
               onChange={handleChange}
-              className="w-full p-3 rounded-lg border bg-gray-800 border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 rounded-lg border bg-white border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
-          </div>
-          
+          </motion.div>
+
           {/* Notes */}
-          <div>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 1.0 }}
+          >
             <label htmlFor="notes" className="block mb-2 font-medium">ملاحظات أو استفسارات</label>
             <textarea
               id="notes"
@@ -250,16 +307,19 @@ const RegistrationForm = () => {
               rows="3"
               value={formData.notes}
               onChange={handleChange}
-              className="w-full p-3 rounded-lg border bg-gray-800 border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 rounded-lg border bg-white border-gray-300 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
             ></textarea>
-          </div>
-          
+          </motion.div>
+
           <motion.button
-            whileHover={{ scale: 1.05 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 1.1 }}
+            whileHover={{ scale: 1.05, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)" }}
             whileTap={{ scale: 0.95 }}
             type="submit"
             disabled={isSubmitting}
-            className="w-full px-8 py-3 rounded-lg font-bold bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-300"
+            className="w-full px-8 py-3 rounded-lg font-bold bg-purple-700 hover:bg-purple-800 text-white transition-colors duration-300"
           >
             {isSubmitting ? (
               <div className="flex items-center justify-center">
@@ -286,7 +346,7 @@ const RegistrationForm = () => {
           </motion.button>
         </form>
       )}
-    </div>
+    </motion.div>
   );
 };
 
