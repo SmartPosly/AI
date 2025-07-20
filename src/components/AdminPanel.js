@@ -10,7 +10,7 @@ const AdminPanel = () => {
   const [sortConfig, setSortConfig] = useState({ key: 'registrationDate', direction: 'desc' });
   const [isResetting, setIsResetting] = useState(false);
 
-  // Get user data from localStorage or generate mock data
+  // Get user data from localStorage - only real registrations, no mock data
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -30,47 +30,21 @@ const AdminPanel = () => {
         if (storedData) {
           try {
             const parsedData = JSON.parse(storedData);
-            if (Array.isArray(parsedData) && parsedData.length > 0) {
-              console.log('Found existing data in localStorage');
+            if (Array.isArray(parsedData)) {
+              console.log('Found existing data in localStorage:', parsedData.length, 'registrations');
               setUsers(parsedData);
               setIsLoading(false);
               return;
             }
           } catch (parseError) {
             console.error('Error parsing localStorage data:', parseError);
-            // Continue to mock data generation if parsing fails
           }
         }
         
-        // Only generate mock data if not reset and no valid data in localStorage
-        console.log('Generating mock data');
-        const mockUsers = Array.from({ length: 50 }, (_, i) => {
-          // Generate random interests
-          const allInterests = ['prompting', 'n8n', 'coding', 'api'];
-          const interestCount = Math.floor(Math.random() * 4) + 1;
-          const shuffledInterests = [...allInterests].sort(() => 0.5 - Math.random());
-          const interests = shuffledInterests.slice(0, interestCount);
-          
-          // Generate random registration date within the last 30 days
-          const registrationDate = new Date();
-          registrationDate.setDate(registrationDate.getDate() - Math.floor(Math.random() * 30));
-          
-          return {
-            id: i + 1,
-            name: `مستخدم ${i + 1}`,
-            email: `user${i + 1}@example.com`,
-            phone: `+966 5${Math.floor(10000000 + Math.random() * 90000000)}`,
-            experience: ['beginner', 'intermediate', 'advanced'][Math.floor(Math.random() * 3)],
-            interests,
-            hearAbout: ['جوجل', 'تويتر', 'فيسبوك', 'صديق', 'إنستغرام'][Math.floor(Math.random() * 5)],
-            notes: Math.random() > 0.7 ? 'أريد معرفة المزيد عن الدورة وطرق الدفع المتاحة.' : '',
-            registrationDate: registrationDate.toISOString()
-          };
-        });
-        
-        // Save mock data to localStorage for future use
-        localStorage.setItem('registrations', JSON.stringify(mockUsers));
-        setUsers(mockUsers);
+        // No mock data generation - just show empty list if no real registrations
+        console.log('No registrations found, showing empty list');
+        setUsers([]);
+        setIsLoading(false);
       } catch (err) {
         console.error('Error setting up users data:', err);
         // Even if there's an error, we'll show empty data rather than an error message
@@ -438,17 +412,14 @@ window.resetRegistrationSystem = () => {
     localStorage.removeItem('registrationsReset');
     sessionStorage.removeItem('registrationsReset');
     
-    // Set a flag to force regeneration
-    localStorage.setItem('forceRegenerate', 'true');
-    
-    console.log('Registration system completely reset. Refresh the page to generate new mock data.');
+    console.log('Registration system completely reset. All registrations have been cleared.');
     console.log('To verify reset status:');
     console.log('- localStorage.registrationsReset =', localStorage.getItem('registrationsReset'));
     console.log('- localStorage.registrations =', localStorage.getItem('registrations'));
     
     return {
       success: true,
-      message: 'System reset complete. Please refresh the page.'
+      message: 'System reset complete. All registrations have been cleared.'
     };
   } catch (error) {
     console.error('Error during system reset:', error);

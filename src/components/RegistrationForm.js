@@ -99,16 +99,29 @@ const RegistrationForm = () => {
 
     setIsSubmitting(true);
 
-    // First, store the data in localStorage as a backup
+    // Store the registration data in localStorage
     try {
+      // Get existing registrations or initialize empty array
       const existingData = JSON.parse(localStorage.getItem('registrations') || '[]');
+      
+      // Create new registration with unique ID and timestamp
       const newRegistration = {
-        id: existingData.length + 1,
+        id: existingData.length > 0 ? Math.max(...existingData.map(item => item.id)) + 1 : 1,
         ...formData,
         registrationDate: new Date().toISOString()
       };
+      
+      // Add to existing data
       existingData.push(newRegistration);
+      
+      // Save back to localStorage
       localStorage.setItem('registrations', JSON.stringify(existingData));
+      
+      // Clear any reset flag that might exist
+      localStorage.removeItem('registrationsReset');
+      sessionStorage.removeItem('registrationsReset');
+      
+      console.log('Registration saved successfully:', newRegistration);
     } catch (error) {
       console.error('Error saving to localStorage:', error);
       // Continue even if localStorage fails
