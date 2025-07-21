@@ -14,6 +14,8 @@ const AdminPanel = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
+        console.log('Loading registration data...');
+        
         // Always check for reset flag first
         const wasReset = localStorage.getItem('registrationsReset') === 'true';
         console.log('Reset flag status:', wasReset);
@@ -26,23 +28,30 @@ const AdminPanel = () => {
         }
         
         // If not reset, try to get data from localStorage
-        const storedData = localStorage.getItem('registrations');
-        if (storedData) {
-          try {
+        try {
+          const storedData = localStorage.getItem('registrations');
+          console.log('Raw stored data:', storedData ? `${storedData.substring(0, 50)}...` : 'null');
+          
+          if (storedData) {
             const parsedData = JSON.parse(storedData);
+            
             if (Array.isArray(parsedData)) {
               console.log('Found existing data in localStorage:', parsedData.length, 'registrations');
               setUsers(parsedData);
               setIsLoading(false);
               return;
+            } else {
+              console.warn('Stored data is not an array:', typeof parsedData);
             }
-          } catch (parseError) {
-            console.error('Error parsing localStorage data:', parseError);
+          } else {
+            console.log('No stored data found in localStorage');
           }
+        } catch (parseError) {
+          console.error('Error parsing localStorage data:', parseError);
         }
         
         // No mock data generation - just show empty list if no real registrations
-        console.log('No registrations found, showing empty list');
+        console.log('No valid registrations found, showing empty list');
         setUsers([]);
         setIsLoading(false);
       } catch (err) {
@@ -194,6 +203,15 @@ const AdminPanel = () => {
         </h2>
         
         <div className="flex gap-3">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 rounded-lg font-medium bg-blue-500 hover:bg-blue-600 text-white"
+          >
+            تحديث البيانات
+          </motion.button>
+          
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

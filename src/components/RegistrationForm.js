@@ -101,29 +101,59 @@ const RegistrationForm = () => {
 
     // Store the registration data in localStorage
     try {
-      // Get existing registrations or initialize empty array
-      const existingData = JSON.parse(localStorage.getItem('registrations') || '[]');
+      console.log('Saving registration data...');
       
+      // Get existing registrations or initialize empty array
+      let existingData = [];
+      try {
+        const storedData = localStorage.getItem('registrations');
+        existingData = storedData ? JSON.parse(storedData) : [];
+        if (!Array.isArray(existingData)) {
+          console.warn('Stored registrations is not an array, resetting to empty array');
+          existingData = [];
+        }
+      } catch (parseError) {
+        console.error('Error parsing existing registrations:', parseError);
+        existingData = [];
+      }
+      
+      console.log('Existing registrations:', existingData.length);
+
       // Create new registration with unique ID and timestamp
+      const newId = existingData.length > 0 
+        ? Math.max(...existingData.map(item => typeof item.id === 'number' ? item.id : 0)) + 1 
+        : 1;
+        
       const newRegistration = {
-        id: existingData.length > 0 ? Math.max(...existingData.map(item => item.id)) + 1 : 1,
+        id: newId,
         ...formData,
         registrationDate: new Date().toISOString()
       };
-      
+
       // Add to existing data
       existingData.push(newRegistration);
-      
+
       // Save back to localStorage
-      localStorage.setItem('registrations', JSON.stringify(existingData));
-      
+      const dataToSave = JSON.stringify(existingData);
+      localStorage.setItem('registrations', dataToSave);
+
       // Clear any reset flag that might exist
       localStorage.removeItem('registrationsReset');
       sessionStorage.removeItem('registrationsReset');
-      
+
       console.log('Registration saved successfully:', newRegistration);
+      console.log('Total registrations now:', existingData.length);
+      
+      // Verify the data was saved correctly
+      const verifyData = localStorage.getItem('registrations');
+      if (verifyData === dataToSave) {
+        console.log('Verification successful: Data saved correctly');
+      } else {
+        console.warn('Verification failed: Saved data does not match');
+      }
     } catch (error) {
       console.error('Error saving to localStorage:', error);
+      alert('حدث خطأ أثناء حفظ بياناتك. يرجى المحاولة مرة أخرى.');
       // Continue even if localStorage fails
     }
 
