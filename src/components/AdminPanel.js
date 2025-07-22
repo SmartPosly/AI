@@ -159,6 +159,38 @@ const AdminPanel = () => {
     XLSX.writeFile(workbook, 'ai_tools_course_registrations.xlsx');
   };
 
+  // Refresh data without page reload
+  const refreshData = () => {
+    setIsLoading(true);
+    
+    try {
+      // Clear any reset flag that might exist
+      localStorage.removeItem('registrationsReset');
+      sessionStorage.removeItem('registrationsReset');
+      
+      // Get fresh data from localStorage
+      const storedData = localStorage.getItem('registrations');
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        if (Array.isArray(parsedData)) {
+          console.log('Refreshed data from localStorage:', parsedData.length, 'registrations');
+          setUsers(parsedData);
+        } else {
+          console.warn('Refreshed data is not an array');
+          setUsers([]);
+        }
+      } else {
+        console.log('No data found during refresh');
+        setUsers([]);
+      }
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      setUsers([]);
+    }
+    
+    setIsLoading(false);
+  };
+
   // Reset the list
   const resetList = () => {
     if (window.confirm('هل أنت متأكد من رغبتك في إعادة تعيين قائمة المسجلين؟ سيتم حذف جميع البيانات.')) {
@@ -206,7 +238,7 @@ const AdminPanel = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => window.location.reload()}
+            onClick={refreshData}
             className="px-4 py-2 rounded-lg font-medium bg-blue-500 hover:bg-blue-600 text-white"
           >
             تحديث البيانات
