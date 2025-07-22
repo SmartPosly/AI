@@ -5,7 +5,7 @@ import * as XLSX from 'xlsx';
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'registrationDate', direction: 'desc' });
   const [isResetting, setIsResetting] = useState(false);
