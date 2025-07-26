@@ -56,7 +56,7 @@ if (!fs.existsSync(usersFilePath)) {
       id: i + 1,
       name: `مستخدم ${i + 1}`,
       email: `user${i + 1}@example.com`,
-      phone: `+966 5${Math.floor(10000000 + Math.random() * 90000000)}`,
+      phone: `+218 5${Math.floor(10000000 + Math.random() * 90000000)}`,
       experience: experienceLevels[Math.floor(Math.random() * experienceLevels.length)],
       interests,
       hearAbout: hearAboutOptions[Math.floor(Math.random() * hearAboutOptions.length)],

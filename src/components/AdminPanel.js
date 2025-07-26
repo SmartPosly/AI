@@ -11,7 +11,7 @@ const AdminPanel = () => {
   const [sortConfig, setSortConfig] = useState({ key: 'registrationDate', direction: 'desc' });
   const [isResetting, setIsResetting] = useState(false);
 
-  // Get user data from localStorage - only real registrations, no mock data
+  // Load user data from API with localStorage fallback
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -28,21 +28,52 @@ const AdminPanel = () => {
           return;
         }
         
-        // If not reset, try to get data from localStorage
+        // Try to fetch from API first
+        try {
+          console.log('Fetching data from API...');
+          const response = await fetch('/api/users', {
+            method: 'GET',
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            }
+          });
+          
+          if (response.ok) {
+            const apiData = await response.json();
+            if (Array.isArray(apiData) && apiData.length > 0) {
+              console.log('Found API data:', apiData.length, 'registrations');
+              setUsers(apiData);
+              
+              // Update localStorage with fresh API data
+              localStorage.setItem('registrations', JSON.stringify(apiData));
+              setIsLoading(false);
+              return;
+            } else {
+              console.log('API returned empty or invalid data');
+            }
+          } else {
+            console.warn('API request failed:', response.status, response.statusText);
+          }
+        } catch (apiError) {
+          console.warn('API fetch failed:', apiError.message);
+        }
+        
+        // Fallback to localStorage if API fails
         try {
           const storedData = localStorage.getItem('registrations');
-          console.log('Raw stored data:', storedData ? `${storedData.substring(0, 50)}...` : 'null');
+          console.log('Falling back to localStorage...');
           
           if (storedData) {
             const parsedData = JSON.parse(storedData);
             
-            if (Array.isArray(parsedData)) {
-              console.log('Found existing data in localStorage:', parsedData.length, 'registrations');
+            if (Array.isArray(parsedData) && parsedData.length > 0) {
+              console.log('Found localStorage data:', parsedData.length, 'registrations');
               setUsers(parsedData);
               setIsLoading(false);
               return;
             } else {
-              console.warn('Stored data is not an array:', typeof parsedData);
+              console.warn('Stored data is not a valid array');
             }
           } else {
             console.log('No stored data found in localStorage');
@@ -51,13 +82,12 @@ const AdminPanel = () => {
           console.error('Error parsing localStorage data:', parseError);
         }
         
-        // No mock data generation - just show empty list if no real registrations
+        // No data found anywhere
         console.log('No valid registrations found, showing empty list');
         setUsers([]);
         setIsLoading(false);
       } catch (err) {
-        console.error('Error setting up users data:', err);
-        // Even if there's an error, we'll show empty data rather than an error message
+        console.error('Error loading users data:', err);
         setUsers([]);
       } finally {
         setIsLoading(false);
@@ -161,7 +191,7 @@ const AdminPanel = () => {
   };
 
   // Refresh data without page reload
-  const refreshData = () => {
+  const refreshData = async () => {
     setIsLoading(true);
     
     try {
@@ -169,7 +199,37 @@ const AdminPanel = () => {
       localStorage.removeItem('registrationsReset');
       sessionStorage.removeItem('registrationsReset');
       
-      // Get fresh data from localStorage
+      console.log('Refreshing data from API...');
+      
+      // Try to fetch fresh data from API first
+      try {
+        const response = await fetch('/api/users', {
+          method: 'GET',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
+        
+        if (response.ok) {
+          const apiData = await response.json();
+          if (Array.isArray(apiData)) {
+            console.log('Refreshed data from API:', apiData.length, 'registrations');
+            setUsers(apiData);
+            
+            // Update localStorage with fresh data
+            localStorage.setItem('registrations', JSON.stringify(apiData));
+            setIsLoading(false);
+            return;
+          }
+        }
+        
+        console.warn('API refresh failed, falling back to localStorage');
+      } catch (apiError) {
+        console.warn('API refresh error:', apiError.message);
+      }
+      
+      // Fallback to localStorage
       const storedData = localStorage.getItem('registrations');
       if (storedData) {
         const parsedData = JSON.parse(storedData);

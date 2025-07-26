@@ -9,7 +9,10 @@ function MainApp() {
   // We're using ThemeContext but don't need to toggle since we're always in dark mode
   // eslint-disable-next-line no-unused-vars
   const { isDarkMode } = useTheme();
-  const [showAdmin, setShowAdmin] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(() => {
+    // Check if admin was logged in before refresh
+    return sessionStorage.getItem('adminLoggedIn') === 'true';
+  });
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [adminPassword, setAdminPassword] = useState("");
   const [loginError, setLoginError] = useState("");
@@ -50,14 +53,17 @@ function MainApp() {
     e.preventDefault();
     if (adminPassword === "admin3506403") {
       // Check for reset flag in both localStorage and sessionStorage
-      const wasReset = localStorage.getItem('registrationsReset') === 'true' || 
-                       sessionStorage.getItem('registrationsReset') === 'true';
-      
+      const wasReset = localStorage.getItem('registrationsReset') === 'true' ||
+        sessionStorage.getItem('registrationsReset') === 'true';
+
       // If the flag exists, ensure it's properly set in localStorage
       if (wasReset) {
         localStorage.setItem('registrationsReset', 'true');
         console.log('Reset flag detected and preserved during login');
       }
+
+      // Save admin login state to persist through refresh
+      sessionStorage.setItem('adminLoggedIn', 'true');
       
       setShowAdmin(true);
       setShowAdminLogin(false);
@@ -69,6 +75,8 @@ function MainApp() {
   };
 
   const handleBackToHome = () => {
+    // Clear admin login state
+    sessionStorage.removeItem('adminLoggedIn');
     setShowAdmin(false);
   };
 
@@ -156,7 +164,7 @@ function MainApp() {
         <main className="max-w-6xl mx-auto px-4 py-8">
           {/* Hero Section */}
           <section className="text-center mb-16">
-            <motion.h2 
+            <motion.h2
               className="text-4xl md:text-5xl font-bold mb-6 text-purple-800"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -164,7 +172,7 @@ function MainApp() {
             >
               تعلم أدوات الذكاء الاصطناعي في 10 أيام
             </motion.h2>
-            <motion.p 
+            <motion.p
               className="text-xl max-w-3xl mx-auto mb-8 text-gray-700"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -172,13 +180,13 @@ function MainApp() {
             >
               دورة مكثفة لمدة 10 أيام لتعلم كيفية استخدام أحدث أدوات الذكاء الاصطناعي لزيادة إنتاجيتك وتطوير مهاراتك
             </motion.p>
-            <motion.div 
+            <motion.div
               className="p-4 rounded-lg inline-block bg-purple-100 border border-purple-200"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.6 }}
-              whileHover={{ 
-                scale: 1.05, 
+              whileHover={{
+                scale: 1.05,
                 boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
                 backgroundColor: "#ede9fe"
               }}
@@ -188,13 +196,13 @@ function MainApp() {
           </section>
 
           {/* Courses Section */}
-          <motion.section 
+          <motion.section
             className="mb-16"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
           >
-            <motion.h3 
+            <motion.h3
               className="text-2xl font-bold mb-8 text-center text-purple-800"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -210,13 +218,13 @@ function MainApp() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: idx * 0.1 }}
-                  whileHover={{ 
-                    y: -5, 
+                  whileHover={{
+                    y: -5,
                     boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
                     scale: 1.02
                   }}
                 >
-                  <motion.div 
+                  <motion.div
                     className="text-4xl mb-4"
                     initial={{ scale: 0.8 }}
                     animate={{ scale: 1 }}
@@ -247,14 +255,14 @@ function MainApp() {
           </motion.section>
 
           {/* Benefits Section */}
-          <motion.section 
+          <motion.section
             className="mb-16 p-8 rounded-xl bg-purple-50 border border-purple-100"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             whileHover={{ boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)" }}
           >
-            <motion.h3 
+            <motion.h3
               className="text-2xl font-bold mb-8 text-center text-purple-800"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -280,7 +288,7 @@ function MainApp() {
                   desc: "دعم فني ومتابعة لمدة شهر بعد انتهاء الدورة"
                 }
               ].map((benefit, idx) => (
-                <motion.div 
+                <motion.div
                   key={idx}
                   className="flex flex-col items-center text-center"
                   initial={{ opacity: 0, y: 20 }}
@@ -288,9 +296,9 @@ function MainApp() {
                   transition={{ duration: 0.5, delay: 0.2 + idx * 0.2 }}
                   whileHover={{ y: -5 }}
                 >
-                  <motion.div 
+                  <motion.div
                     className="w-16 h-16 flex items-center justify-center rounded-full text-2xl mb-4 bg-white shadow-md border border-purple-100"
-                    whileHover={{ 
+                    whileHover={{
                       scale: 1.2,
                       boxShadow: "0 0 0 8px rgba(168, 85, 247, 0.2)",
                       transition: { duration: 0.3, type: "spring", stiffness: 300 }
@@ -298,7 +306,7 @@ function MainApp() {
                   >
                     {benefit.icon}
                   </motion.div>
-                  <motion.h4 
+                  <motion.h4
                     className="text-lg font-bold mb-2 text-purple-800"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -306,7 +314,7 @@ function MainApp() {
                   >
                     {benefit.title}
                   </motion.h4>
-                  <motion.p 
+                  <motion.p
                     className="text-gray-700"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -320,14 +328,14 @@ function MainApp() {
           </motion.section>
 
           {/* Registration Form */}
-          <motion.section 
-            className="mb-16" 
+          <motion.section
+            className="mb-16"
             id="register"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
           >
-            <motion.h3 
+            <motion.h3
               className="text-2xl font-bold mb-8 text-center text-purple-800"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -339,14 +347,14 @@ function MainApp() {
           </motion.section>
 
           {/* FAQ Section */}
-          <motion.section 
+          <motion.section
             className="mb-16 p-8 rounded-xl bg-white border border-gray-200 shadow-md"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             whileHover={{ boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)" }}
           >
-            <motion.h3 
+            <motion.h3
               className="text-2xl font-bold mb-8 text-center text-purple-800"
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -377,20 +385,20 @@ function MainApp() {
                   answer: <>يمكنك التواصل معنا عبر الهاتف: <a href="tel:+218913555150" className="text-purple-700 hover:underline">0913555150</a> أو البريد الإلكتروني: <a href="mailto:albkshi@smartpos.ly" className="text-purple-700 hover:underline">albkshi@smartpos.ly</a></>
                 }
               ].map((faq, idx) => (
-                <motion.div 
+                <motion.div
                   key={idx}
                   className="p-4 rounded-lg bg-gray-50 border border-gray-100"
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 * idx }}
-                  whileHover={{ 
-                    scale: 1.02, 
-                    backgroundColor: "#f5f3ff", 
+                  whileHover={{
+                    scale: 1.02,
+                    backgroundColor: "#f5f3ff",
                     borderColor: "#ddd6fe",
                     boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
                   }}
                 >
-                  <motion.h4 
+                  <motion.h4
                     className="font-bold mb-2 text-purple-800"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -398,7 +406,7 @@ function MainApp() {
                   >
                     {faq.question}
                   </motion.h4>
-                  <motion.p 
+                  <motion.p
                     className="text-gray-700"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}

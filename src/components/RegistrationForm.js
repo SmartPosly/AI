@@ -76,11 +76,11 @@ const RegistrationForm = () => {
     } else {
       // Remove any non-digit characters
       const cleanPhone = formData.phone.replace(/\D/g, '');
-      // Check if it's exactly 10 digits and starts with 091, 092, 093, 094, or 095
+      // Check if it's exactly 10 digits and starts with 09X (Libyan mobile numbers)
       if (cleanPhone.length !== 10) {
         errors.phone = 'رقم الهاتف يجب أن يتكون من 10 أرقام';
-      } else if (!/^09[1-5]/.test(cleanPhone)) {
-        errors.phone = 'رقم الهاتف يجب أن يبدأ بـ 091 أو 092 أو 093 أو 094 أو 095';
+      } else if (!/^09[1-9]/.test(cleanPhone)) {
+        errors.phone = 'رقم الهاتف يجب أن يبدأ بـ 091 أو 092 أو 093 أو 094 أو 095 أو 096 أو 097 أو 098 أو 099';
       }
     }
 
@@ -92,86 +92,112 @@ const RegistrationForm = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!validateForm()) return;
 
     setIsSubmitting(true);
 
-    // Store the registration data in localStorage
     try {
-      console.log('Saving registration data...');
+      console.log('Submitting registration data...');
       
-      // Get existing registrations or initialize empty array
-      let existingData = [];
-      try {
-        const storedData = localStorage.getItem('registrations');
-        existingData = storedData ? JSON.parse(storedData) : [];
-        if (!Array.isArray(existingData)) {
-          console.warn('Stored registrations is not an array, resetting to empty array');
-          existingData = [];
-        }
-      } catch (parseError) {
-        console.error('Error parsing existing registrations:', parseError);
-        existingData = [];
-      }
-      
-      console.log('Existing registrations:', existingData.length);
+      // Send data to API
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
 
-      // Create new registration with unique ID and timestamp
-      const newId = existingData.length > 0 
-        ? Math.max(...existingData.map(item => typeof item.id === 'number' ? item.id : 0)) + 1 
-        : 1;
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        console.log('Registration successful:', result.user);
         
-      const newRegistration = {
-        id: newId,
-        ...formData,
-        registrationDate: new Date().toISOString()
-      };
+        // Also save to localStorage as backup and for immediate admin panel access
+        try {
+          let existingData = [];
+          const storedData = localStorage.getItem('registrations');
+          if (storedData) {
+            existingData = JSON.parse(storedData);
+            if (!Array.isArray(existingData)) existingData = [];
+          }
+          
+          existingData.push(result.user);
+          localStorage.setItem('registrations', JSON.stringify(existingData));
+          localStorage.removeItem('registrationsReset');
+          sessionStorage.removeItem('registrationsReset');
+          
+          console.log('Data also saved to localStorage for admin panel');
+        } catch (localStorageError) {
+          console.warn('Failed to save to localStorage:', localStorageError);
+        }
 
-      // Add to existing data
-      existingData.push(newRegistration);
-
-      // Save back to localStorage
-      const dataToSave = JSON.stringify(existingData);
-      localStorage.setItem('registrations', dataToSave);
-
-      // Clear any reset flag that might exist
-      localStorage.removeItem('registrationsReset');
-      sessionStorage.removeItem('registrationsReset');
-
-      console.log('Registration saved successfully:', newRegistration);
-      console.log('Total registrations now:', existingData.length);
-      
-      // Verify the data was saved correctly
-      const verifyData = localStorage.getItem('registrations');
-      if (verifyData === dataToSave) {
-        console.log('Verification successful: Data saved correctly');
+        // Show success
+        setIsSubmitted(true);
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          experience: 'beginner',
+          interests: [],
+          hearAbout: '',
+          notes: ''
+        });
       } else {
-        console.warn('Verification failed: Saved data does not match');
+        throw new Error(result.message || 'Registration failed');
       }
     } catch (error) {
-      console.error('Error saving to localStorage:', error);
-      alert('حدث خطأ أثناء حفظ بياناتك. يرجى المحاولة مرة أخرى.');
-      // Continue even if localStorage fails
-    }
+      console.error('Registration error:', error);
+      
+      // Fallback to localStorage only
+      try {
+        console.log('Falling back to localStorage...');
+        
+        let existingData = [];
+        const storedData = localStorage.getItem('registrations');
+        if (storedData) {
+          existingData = JSON.parse(storedData);
+          if (!Array.isArray(existingData)) existingData = [];
+        }
+        
+        const newId = existingData.length > 0 
+          ? Math.max(...existingData.map(item => typeof item.id === 'number' ? item.id : 0)) + 1 
+          : 1;
+          
+        const newRegistration = {
+          id: newId,
+          ...formData,
+          registrationDate: new Date().toISOString()
+        };
 
-    // Always show success after a short delay
-    // This ensures a good user experience even if the API call fails
-    setTimeout(() => {
-      setIsSubmitted(true);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        experience: 'beginner',
-        interests: [],
-        hearAbout: '',
-        notes: ''
-      });
+        existingData.push(newRegistration);
+        localStorage.setItem('registrations', JSON.stringify(existingData));
+        localStorage.removeItem('registrationsReset');
+        sessionStorage.removeItem('registrationsReset');
+
+        console.log('Registration saved to localStorage as fallback');
+        
+        // Show success
+        setIsSubmitted(true);
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          experience: 'beginner',
+          interests: [],
+          hearAbout: '',
+          notes: ''
+        });
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+        alert('حدث خطأ أثناء حفظ بياناتك. يرجى المحاولة مرة أخرى.');
+      }
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -264,7 +290,7 @@ const RegistrationForm = () => {
             {formErrors.phone ? (
               <p className="mt-1 text-red-500 text-sm">{formErrors.phone}</p>
             ) : (
-              <p className="mt-1 text-gray-500 text-sm">يجب أن يبدأ الرقم بـ 091 أو 092 أو 093 أو 094 أو 095 ويتكون من 10 أرقام</p>
+              <p className="mt-1 text-gray-500 text-sm">يجب أن يبدأ الرقم بـ 09X (رقم ليبي) ويتكون من 10 أرقام</p>
             )}
           </motion.div>
 
