@@ -1,8 +1,5 @@
-const fs = require('fs');
-const path = require('path');
-
 // Serverless function for registration
-module.exports = (req, res) => {
+export default function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -26,42 +23,9 @@ module.exports = (req, res) => {
   // Handle POST request
   if (req.method === 'POST') {
     try {
-      const usersFilePath = path.join(process.cwd(), 'data', 'users.json');
+      const { addUser } = require('./_lib/storage');
       
-      // Read existing users
-      let users = [];
-      if (fs.existsSync(usersFilePath)) {
-        const usersData = fs.readFileSync(usersFilePath, 'utf8');
-        users = JSON.parse(usersData);
-      }
-      
-      // Create new user with auto-generated ID and format phone number
-      let formattedPhone = req.body.phone;
-      
-      // Remove any existing country code and format consistently
-      if (formattedPhone.startsWith('+218')) {
-        // If it already has +218, ensure there's a space after it
-        formattedPhone = formattedPhone.replace(/^\+218\s?/, '+218 ');
-      } else if (formattedPhone.startsWith('218')) {
-        // If it starts with 218, add the + and space
-        formattedPhone = '+218 ' + formattedPhone.substring(3).trim();
-      } else {
-        // If it's just the local number, add +218 prefix
-        formattedPhone = '+218 ' + formattedPhone;
-      }
-        
-      const newUser = {
-        id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
-        ...req.body,
-        phone: formattedPhone,
-        registrationDate: new Date().toISOString()
-      };
-      
-      // Add new user to the array
-      users.push(newUser);
-      
-      // Save back to file
-      fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
+      const newUser = addUser(req.body);
       
       res.status(201).json({ 
         success: true, 

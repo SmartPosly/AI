@@ -998,5 +998,18 @@
     "hearAbout": "Twitter",
     "notes": "خبيرة في التكنولوجيا",
     "registrationDate": "2025-07-26T22:40:03.053Z"
+  },
+  {
+    "id": 70,
+    "name": "Test Vercel User",
+    "email": "vercel@example.com",
+    "phone": "+218 0913555000",
+    "experience": "beginner",
+    "interests": [
+      "prompting"
+    ],
+    "hearAbout": "Test",
+    "notes": "Testing Vercel deployment",
+    "registrationDate": "2025-07-26T22:48:37.874Z"
   }
 ]

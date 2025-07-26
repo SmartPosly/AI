@@ -1,5 +1,5 @@
 // Serverless function for getting users
-module.exports = (req, res) => {
+export default function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -23,17 +23,9 @@ module.exports = (req, res) => {
   // Handle GET request
   if (req.method === 'GET') {
     try {
-      const fs = require('fs');
-      const path = require('path');
-      const usersFilePath = path.join(process.cwd(), 'data', 'users.json');
-
-      // Read users from file
-      let users = [];
-      if (fs.existsSync(usersFilePath)) {
-        const usersData = fs.readFileSync(usersFilePath, 'utf8');
-        users = JSON.parse(usersData);
-      }
-
+      const { getUsers } = require('./_lib/storage');
+      
+      const users = getUsers();
       res.status(200).json(users);
     } catch (error) {
       console.error('Error fetching users:', error);
