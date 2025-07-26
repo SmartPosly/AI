@@ -8,7 +8,7 @@ export default function handler(req, res) {
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
   );
-  
+
   // Add cache-busting headers
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
@@ -24,7 +24,7 @@ export default function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const { getUsers } = require('./_lib/storage');
-      
+
       const users = getUsers();
       res.status(200).json(users);
     } catch (error) {

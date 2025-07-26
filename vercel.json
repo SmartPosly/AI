@@ -3,16 +3,13 @@
   "buildCommand": "npm run build",
   "outputDirectory": "build",
   "framework": "create-react-app",
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    }
+  ],
+  "routes": [
     {
       "handle": "filesystem"
     },
@@ -20,9 +17,5 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "github": {
-    "enabled": true,
-    "silent": false
-  }
+  ]
 }

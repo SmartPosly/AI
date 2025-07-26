@@ -1011,5 +1011,18 @@
     "hearAbout": "Test",
     "notes": "Testing Vercel deployment",
     "registrationDate": "2025-07-26T22:48:37.874Z"
+  },
+  {
+    "id": 71,
+    "name": "Vercel Fix Test",
+    "email": "vercel-fix@example.com",
+    "phone": "+218 0913555111",
+    "experience": "beginner",
+    "interests": [
+      "prompting"
+    ],
+    "hearAbout": "Test",
+    "notes": "Testing after Vercel configuration fix",
+    "registrationDate": "2025-07-26T22:52:01.823Z"
   }
 ]
