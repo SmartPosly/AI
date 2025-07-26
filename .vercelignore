@@ -9,7 +9,5 @@ yarn-debug.log*
 yarn-error.log*
 .DS_Store
 *.log
-test-*.js
-test-*.html
 server.js
 ensure-build.js
