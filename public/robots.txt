@@ -1,6 +1,12 @@
-# Allow all web crawlers
 User-agent: *
 Allow: /
+Allow: /static/
+Allow: /api/users
+Disallow: /api/register
+Disallow: /admin
 
-# Sitemap location
+# Sitemap
 Sitemap: https://ai.smartpos.ly/sitemap.xml
+
+# Crawl-delay for better server performance
+Crawl-delay: 1

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { trackRegistration, trackFormInteraction } from '../utils/analytics';
 
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -35,6 +36,9 @@ const RegistrationForm = () => {
       ...prev,
       [name]: value
     }));
+
+    // Track form interactions
+    trackFormInteraction(name, 'input');
 
     // Clear error when user starts typing
     if (formErrors[name]) {
@@ -116,6 +120,9 @@ const RegistrationForm = () => {
       if (response.ok && result.success) {
         console.log('Registration successful:', result.user);
         
+        // Track successful registration
+        trackRegistration('success', formData.interests.join(','));
+        
         // Also save to localStorage as backup and for immediate admin panel access
         try {
           let existingData = [];
@@ -151,6 +158,9 @@ const RegistrationForm = () => {
       }
     } catch (error) {
       console.error('Registration error:', error);
+      
+      // Track failed registration
+      trackRegistration('failed', formData.interests.join(','));
       
       // Fallback to localStorage only
       try {

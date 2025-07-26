@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ThemeProvider } from "./context/ThemeContext";
 import { useTheme } from "./hooks/useTheme";
 import RegistrationForm from "./components/RegistrationForm";
 import AdminPanel from "./components/AdminPanel";
 import { motion } from "framer-motion";
+import { trackPageView, trackAdminLogin, trackCourseInterest } from "./utils/analytics";
 
 function MainApp() {
   // We're using ThemeContext but don't need to toggle since we're always in dark mode
@@ -16,6 +17,11 @@ function MainApp() {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [adminPassword, setAdminPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+
+  // Track page view on component mount
+  useEffect(() => {
+    trackPageView('دورات أدوات الذكاء الاصطناعي', window.location.href);
+  }, []);
 
   // Course data
   const courses = [
@@ -52,6 +58,9 @@ function MainApp() {
   const handleAdminLogin = (e) => {
     e.preventDefault();
     if (adminPassword === "admin3506403") {
+      // Track successful admin login
+      trackAdminLogin(true);
+      
       // Check for reset flag in both localStorage and sessionStorage
       const wasReset = localStorage.getItem('registrationsReset') === 'true' ||
         sessionStorage.getItem('registrationsReset') === 'true';
@@ -70,6 +79,8 @@ function MainApp() {
       setAdminPassword("");
       setLoginError("");
     } else {
+      // Track failed admin login
+      trackAdminLogin(false);
       setLoginError("كلمة المرور غير صحيحة");
     }
   };
