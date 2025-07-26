@@ -1024,5 +1024,18 @@
     "hearAbout": "Test",
     "notes": "Testing after Vercel configuration fix",
     "registrationDate": "2025-07-26T22:52:01.823Z"
+  },
+  {
+    "id": 72,
+    "name": "Node 22 Test User",
+    "email": "node22@example.com",
+    "phone": "+218 0913555222",
+    "experience": "beginner",
+    "interests": [
+      "prompting"
+    ],
+    "hearAbout": "Test",
+    "notes": "Testing with Node.js 22.x",
+    "registrationDate": "2025-07-26T23:14:35.027Z"
   }
 ]
