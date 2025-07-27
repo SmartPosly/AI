@@ -344,14 +344,14 @@ const AdminPanel = () => {
           // Continue with local cleanup even if API fails
         }
         
-        // Step 2: Clear localStorage
-        localStorage.removeItem('registrations');
+        // Step 2: Keep localStorage data but set reset flag
+        // DON'T clear localStorage - we want to preserve it for reload
         localStorage.removeItem('registrationsReset');
         sessionStorage.removeItem('registrationsReset');
-        logger.debug('Local storage cleared');
         
-        // Step 3: Set reset flag to prevent data reload
+        // Step 3: Set reset flag to hide data temporarily
         localStorage.setItem('registrationsReset', 'true');
+        logger.debug('Reset flag set, localStorage data preserved for reload');
         
         logger.info('Complete system reset successful');
         
@@ -383,14 +383,67 @@ const AdminPanel = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => {
+            onClick={async () => {
               if (isSystemReset) {
-                // If system was reset, ask user if they want to reload data
-                if (window.confirm('النظام في حالة إعادة تعيين. هل تريد إعادة تحميل البيانات؟')) {
-                  localStorage.removeItem('registrationsReset');
-                  sessionStorage.removeItem('registrationsReset');
-                  setIsSystemReset(false);
-                  refreshData();
+                // If system was reset, reload data from localStorage and sync to API
+                if (window.confirm('هل تريد إعادة تحميل البيانات المحفوظة محلياً وإعادة تفعيل النظام؟')) {
+                  setIsLoading(true);
+                  
+                  try {
+                    logger.info('Reloading data after reset...');
+                    
+                    // Clear reset flag first
+                    localStorage.removeItem('registrationsReset');
+                    sessionStorage.removeItem('registrationsReset');
+                    setIsSystemReset(false);
+                    
+                    // Load data from localStorage
+                    let localData = [];
+                    try {
+                      const storedData = localStorage.getItem('registrations');
+                      if (storedData && storedData.trim() !== '') {
+                        const parsedData = JSON.parse(storedData);
+                        if (Array.isArray(parsedData)) {
+                          localData = parsedData;
+                          logger.info('Reloaded from localStorage:', localData.length, 'registrations');
+                        }
+                      }
+                    } catch (parseError) {
+                      logger.error('Error parsing localStorage during reload:', parseError);
+                    }
+                    
+                    // Sync localStorage data back to shared API
+                    if (localData.length > 0) {
+                      try {
+                        logger.debug('Syncing localStorage data back to shared API...');
+                        const syncResponse = await fetch('/api/shared-data', {
+                          method: 'PUT',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({ registrations: localData })
+                        });
+                        
+                        if (syncResponse.ok) {
+                          logger.info('Successfully synced localStorage back to shared API');
+                        } else {
+                          logger.warn('Failed to sync to shared API, but showing local data');
+                        }
+                      } catch (syncError) {
+                        logger.warn('Error syncing to shared API:', syncError.message);
+                      }
+                    }
+                    
+                    // Set the data and clear reset state
+                    setUsers(localData);
+                    logger.info('Data reload complete:', localData.length, 'registrations restored');
+                    
+                  } catch (error) {
+                    logger.error('Error during data reload:', error);
+                    alert('حدث خطأ أثناء إعادة تحميل البيانات');
+                  } finally {
+                    setIsLoading(false);
+                  }
                 }
               } else {
                 // Normal refresh
@@ -503,7 +556,7 @@ const AdminPanel = () => {
           </h3>
           <p className={isSystemReset ? 'text-orange-600' : 'text-gray-500'}>
             {isSystemReset 
-              ? 'تم مسح جميع البيانات. اضغط على "إعادة تحميل البيانات" لاستعادة البيانات المحفوظة.' 
+              ? 'تم مسح البيانات من الخادم لتوفير المساحة. البيانات محفوظة محلياً ويمكن استعادتها.' 
               : 'لم يتم تسجيل أي مستخدمين بعد.'
             }
           </p>

@@ -1,9 +1,19 @@
-// In-memory storage for registrations (will reset on each deployment)
-// This is a temporary solution for Vercel serverless environment
+import { createClient } from '@supabase/supabase-js'
+
+// Supabase configuration for serverless function
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+let supabase = null
+if (supabaseUrl && supabaseServiceKey) {
+  supabase = createClient(supabaseUrl, supabaseServiceKey)
+}
+
+// In-memory storage as fallback
 let registrations = [];
 
 // Serverless function for registration
-export default function handler(req, res) {
+export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -41,23 +51,79 @@ export default function handler(req, res) {
       
       // Create user with formatted data
       const newUser = {
-        id: Date.now(), // Use timestamp as ID for uniqueness
-        ...userData,
+        name: userData.name,
+        email: userData.email,
         phone: formattedPhone,
-        registrationDate: new Date().toISOString()
+        experience: userData.experience,
+        interests: userData.interests,
+        hear_about: userData.hearAbout,
+        notes: userData.notes,
+        created_at: new Date().toISOString()
       };
       
-      // Store in memory (temporary solution)
-      registrations.push(newUser);
+      let savedUser = null;
+      let totalCount = 0;
       
-      console.log('New registration added:', newUser.name, newUser.email);
-      console.log('Total registrations in memory:', registrations.length);
+      // Try to save to Supabase first
+      if (supabase) {
+        try {
+          console.log('Saving to Supabase...');
+          const { data, error } = await supabase
+            .from('registrations')
+            .insert([newUser])
+            .select()
+            .single();
+          
+          if (error) throw error;
+          
+          savedUser = {
+            id: data.id,
+            ...userData,
+            phone: formattedPhone,
+            registrationDate: data.created_at
+          };
+          
+          // Get total count
+          const { count } = await supabase
+            .from('registrations')
+            .select('*', { count: 'exact', head: true });
+          
+          totalCount = count || 1;
+          
+          console.log('Successfully saved to Supabase:', savedUser.name);
+          console.log('Total registrations in Supabase:', totalCount);
+          
+        } catch (supabaseError) {
+          console.error('Supabase error, falling back to memory:', supabaseError.message);
+          // Fall back to memory storage
+          savedUser = {
+            id: Date.now(),
+            ...userData,
+            phone: formattedPhone,
+            registrationDate: new Date().toISOString()
+          };
+          registrations.push(savedUser);
+          totalCount = registrations.length;
+        }
+      } else {
+        // No Supabase configured, use memory storage
+        console.log('No Supabase configured, using memory storage');
+        savedUser = {
+          id: Date.now(),
+          ...userData,
+          phone: formattedPhone,
+          registrationDate: new Date().toISOString()
+        };
+        registrations.push(savedUser);
+        totalCount = registrations.length;
+      }
       
       res.status(201).json({ 
         success: true, 
         message: 'تم التسجيل بنجاح',
-        user: newUser,
-        totalRegistrations: registrations.length
+        user: savedUser,
+        totalRegistrations: totalCount,
+        storage: supabase ? 'supabase' : 'memory'
       });
     } catch (error) {
       console.error('Error registering user:', error);

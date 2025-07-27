@@ -1,10 +1,18 @@
-// Shared data storage for serverless environment
-// This is a temporary solution - in production, use a proper database
+import { createClient } from '@supabase/supabase-js'
 
-// Global storage (will reset on each deployment)
+// Supabase configuration for serverless function
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+let supabase = null
+if (supabaseUrl && supabaseServiceKey) {
+  supabase = createClient(supabaseUrl, supabaseServiceKey)
+}
+
+// Fallback in-memory storage
 let sharedRegistrations = [];
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -29,10 +37,46 @@ export default function handler(req, res) {
     switch (req.method) {
       case 'GET':
         // Return all registrations
+        let registrations = [];
+        let source = 'memory';
+        
+        if (supabase) {
+          try {
+            const { data, error } = await supabase
+              .from('registrations')
+              .select('*')
+              .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            
+            // Transform to expected format
+            registrations = data.map(user => ({
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              phone: user.phone,
+              experience: user.experience,
+              interests: user.interests,
+              hearAbout: user.hear_about,
+              notes: user.notes,
+              registrationDate: user.created_at
+            }));
+            
+            source = 'supabase';
+          } catch (error) {
+            console.error('Supabase GET error:', error);
+            registrations = sharedRegistrations;
+            source = 'memory_fallback';
+          }
+        } else {
+          registrations = sharedRegistrations;
+        }
+        
         res.status(200).json({
           success: true,
-          registrations: sharedRegistrations,
-          count: sharedRegistrations.length,
+          registrations: registrations,
+          count: registrations.length,
+          source: source,
           timestamp: new Date().toISOString()
         });
         break;

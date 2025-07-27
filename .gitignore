@@ -23,3 +23,9 @@ yarn-error.log*
 
 # Vercel
 .vercel
+
+# Test files (exclude from repository)
+test-*.html
+debug-*.html
+simple-db-test.html
+supabase-table-setup.sql

@@ -1,9 +1,16 @@
-// Import the registrations from the register module
-// Note: In serverless, this won't work across function calls
-// This is a demonstration of the issue with serverless storage
+import { createClient } from '@supabase/supabase-js'
+
+// Supabase configuration for serverless function
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+let supabase = null
+if (supabaseUrl && supabaseServiceKey) {
+  supabase = createClient(supabaseUrl, supabaseServiceKey)
+}
 
 // Serverless function for getting users
-export default function handler(req, res) {
+export default async function handler(req, res) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -27,16 +34,53 @@ export default function handler(req, res) {
   // Handle GET request
   if (req.method === 'GET') {
     try {
-      // In serverless environment, each function call is isolated
-      // So we can't access registrations from the register function
-      // Return empty array and let admin panel use localStorage
-      console.log('Users API called - returning empty array due to serverless isolation');
+      let users = [];
+      let source = 'memory';
+      
+      // Try to fetch from Supabase first
+      if (supabase) {
+        try {
+          console.log('Fetching users from Supabase...');
+          const { data, error } = await supabase
+            .from('registrations')
+            .select('*')
+            .order('created_at', { ascending: false });
+          
+          if (error) throw error;
+          
+          // Transform Supabase data to match expected format
+          users = data.map(user => ({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            experience: user.experience,
+            interests: user.interests,
+            hearAbout: user.hear_about,
+            notes: user.notes,
+            registrationDate: user.created_at
+          }));
+          
+          source = 'supabase';
+          console.log('Successfully fetched from Supabase:', users.length, 'users');
+          
+        } catch (supabaseError) {
+          console.error('Supabase error:', supabaseError.message);
+          users = [];
+          source = 'supabase_error';
+        }
+      } else {
+        console.log('No Supabase configured, returning empty array');
+        users = [];
+        source = 'no_config';
+      }
       
       res.status(200).json({
         success: true,
-        users: [],
-        message: 'Serverless environment - data stored in localStorage',
-        note: 'In production, this would connect to a database'
+        users: users,
+        count: users.length,
+        source: source,
+        message: supabase ? 'Data fetched from Supabase' : 'No database configured'
       });
     } catch (error) {
       console.error('Error fetching users:', error);

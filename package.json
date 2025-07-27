@@ -5,6 +5,7 @@
   "private": true,
   "dependencies": {
     "@heroicons/react": "^2.2.0",
+    "@supabase/supabase-js": "2.52.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "eslint": "9.32.0",
