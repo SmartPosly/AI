@@ -10,7 +10,7 @@ const AdminPanel = () => {
   const [sortConfig, setSortConfig] = useState({ key: 'registrationDate', direction: 'desc' });
   const [isResetting, setIsResetting] = useState(false);
 
-  // Load user data from API with localStorage fallback
+  // Load user data from multiple sources
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -27,37 +27,89 @@ const AdminPanel = () => {
           return;
         }
         
-        // EMERGENCY FIX: Use localStorage as primary source (Vercel serverless compatibility)
-        logger.debug('Loading data from localStorage (primary source)...');
-        
-        // Read from localStorage (primary data source in production)
+        // Try to load from shared data API first
+        let sharedData = [];
         try {
-          const storedData = localStorage.getItem('registrations');
+          logger.debug('Attempting to load from shared data API...');
+          const response = await fetch('/api/shared-data', {
+            method: 'GET',
+            headers: {
+              'Cache-Control': 'no-cache'
+            }
+          });
           
-          if (storedData && storedData.trim() !== '') {
-            const parsedData = JSON.parse(storedData);
-            
-            if (Array.isArray(parsedData)) {
-              logger.info('Found localStorage data:', parsedData.length, 'registrations');
-              setUsers(parsedData);
-              setIsLoading(false);
-              return;
-            } else {
-              logger.warn('Stored data is not a valid array, resetting');
-              localStorage.setItem('registrations', '[]');
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && Array.isArray(result.registrations)) {
+              sharedData = result.registrations;
+              logger.info('Loaded from shared data API:', sharedData.length, 'registrations');
             }
           } else {
-            logger.debug('No stored data found in localStorage, initializing empty');
-            localStorage.setItem('registrations', '[]'); // Initialize
+            logger.warn('Shared data API returned error:', response.status);
+          }
+        } catch (apiError) {
+          logger.warn('Failed to load from shared data API:', apiError.message);
+        }
+        
+        // Load from localStorage as backup/supplement
+        let localData = [];
+        try {
+          const storedData = localStorage.getItem('registrations');
+          if (storedData && storedData.trim() !== '') {
+            const parsedData = JSON.parse(storedData);
+            if (Array.isArray(parsedData)) {
+              localData = parsedData;
+              logger.info('Found localStorage data:', localData.length, 'registrations');
+            }
           }
         } catch (parseError) {
           logger.error('Error parsing localStorage data:', parseError);
           localStorage.setItem('registrations', '[]'); // Fix corrupted data
         }
         
-        // No data found anywhere
-        logger.info('No valid registrations found, showing empty list');
-        setUsers([]);
+        // Merge data from both sources, removing duplicates by email
+        const allData = [...sharedData];
+        const existingEmails = new Set(sharedData.map(user => user.email));
+        
+        localData.forEach(user => {
+          if (!existingEmails.has(user.email)) {
+            allData.push(user);
+            existingEmails.add(user.email);
+          }
+        });
+        
+        // If we have data from shared API but not in localStorage, sync it
+        if (sharedData.length > 0 && localData.length === 0) {
+          try {
+            localStorage.setItem('registrations', JSON.stringify(sharedData));
+            logger.debug('Synced shared data to localStorage');
+          } catch (syncError) {
+            logger.warn('Failed to sync to localStorage:', syncError);
+          }
+        }
+        
+        // If we have more data in localStorage, sync it to shared API
+        if (localData.length > sharedData.length && localData.length > 0) {
+          try {
+            logger.debug('Syncing localStorage data to shared API...');
+            const syncResponse = await fetch('/api/shared-data', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ registrations: localData })
+            });
+            
+            if (syncResponse.ok) {
+              logger.info('Successfully synced localStorage to shared API');
+            }
+          } catch (syncError) {
+            logger.warn('Failed to sync to shared API:', syncError);
+          }
+        }
+        
+        logger.info('Total unique registrations loaded:', allData.length);
+        setUsers(allData);
         setIsLoading(false);
       } catch (err) {
         logger.error('Error loading users data:', err);
@@ -172,32 +224,77 @@ const AdminPanel = () => {
       localStorage.removeItem('registrationsReset');
       sessionStorage.removeItem('registrationsReset');
       
-      logger.debug('Refreshing data from localStorage...');
+      logger.debug('Refreshing data from all sources...');
       
-      // Fallback to localStorage
-      const storedData = localStorage.getItem('registrations');
-      if (storedData && storedData.trim() !== '') {
-        try {
+      // Try to load from shared data API first
+      let sharedData = [];
+      try {
+        logger.debug('Refreshing from shared data API...');
+        const response = await fetch('/api/shared-data', {
+          method: 'GET',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && Array.isArray(result.registrations)) {
+            sharedData = result.registrations;
+            logger.info('Refreshed from shared data API:', sharedData.length, 'registrations');
+          }
+        }
+      } catch (apiError) {
+        logger.warn('Failed to refresh from shared data API:', apiError.message);
+      }
+      
+      // Load from localStorage as backup
+      let localData = [];
+      try {
+        const storedData = localStorage.getItem('registrations');
+        if (storedData && storedData.trim() !== '') {
           const parsedData = JSON.parse(storedData);
           if (Array.isArray(parsedData)) {
-            logger.info('Refreshed data from localStorage:', parsedData.length, 'registrations');
-            setUsers(parsedData);
-          } else {
-            logger.warn('Stored data is not a valid array, resetting to empty array');
-            setUsers([]);
-            localStorage.setItem('registrations', '[]'); // Fix corrupted data
+            localData = parsedData;
+            logger.info('Refreshed from localStorage:', localData.length, 'registrations');
           }
-        } catch (parseError) {
-          logger.error('Error parsing localStorage data:', parseError);
-          logger.debug('Resetting corrupted localStorage data');
-          setUsers([]);
-          localStorage.setItem('registrations', '[]'); // Fix corrupted data
         }
-      } else {
-        logger.debug('No data found during refresh, starting with empty list');
-        setUsers([]);
-        localStorage.setItem('registrations', '[]'); // Initialize empty array
+      } catch (parseError) {
+        logger.error('Error parsing localStorage data during refresh:', parseError);
+        localStorage.setItem('registrations', '[]'); // Fix corrupted data
       }
+      
+      // Use the source with more data, or shared data if equal
+      const finalData = sharedData.length >= localData.length ? sharedData : localData;
+      
+      // Sync the data if needed
+      if (sharedData.length !== localData.length) {
+        try {
+          if (sharedData.length > localData.length) {
+            // Sync shared data to localStorage
+            localStorage.setItem('registrations', JSON.stringify(sharedData));
+            logger.debug('Synced shared data to localStorage during refresh');
+          } else if (localData.length > 0) {
+            // Sync localStorage to shared data
+            const syncResponse = await fetch('/api/shared-data', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ registrations: localData })
+            });
+            
+            if (syncResponse.ok) {
+              logger.info('Synced localStorage to shared API during refresh');
+            }
+          }
+        } catch (syncError) {
+          logger.warn('Failed to sync data during refresh:', syncError);
+        }
+      }
+      
+      logger.info('Refresh complete, total registrations:', finalData.length);
+      setUsers(finalData);
     } catch (error) {
       logger.error('Error refreshing data:', error);
       setUsers([]);

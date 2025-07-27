@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test New Registration System</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+        button { padding: 10px 15px; margin: 5px; background: #007cba; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #005a87; }
+        .result { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; white-space: pre-wrap; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Test New Registration System</h1>
+    <p>This page tests the new hybrid registration system with shared data API.</p>
+    
+    <div class="test-section">
+        <h2>1. Check Current State</h2>
+        <button onclick="checkCurrentState()">Check All Data Sources</button>
+        <div id="state-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Test Shared Data API</h2>
+        <button onclick="testSharedDataAPI()">Test GET</button>
+        <button onclick="addTestRegistration()">Add Test Registration</button>
+        <button onclick="clearSharedData()">Clear Shared Data</button>
+        <div id="shared-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Test Registration Flow</h2>
+        <button onclick="testFullRegistration()">Test Full Registration</button>
+        <div id="registration-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Test Data Sync</h2>
+        <button onclick="testDataSync()">Test Sync Between Sources</button>
+        <div id="sync-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5. Reset Everything</h2>
+        <button onclick="resetEverything()" style="background: #dc3545;">Reset All Data</button>
+        <div id="reset-result" class="result"></div>
+    </div>
+
+    <script>
+        async function checkCurrentState() {
+            const result = document.getElementById('state-result');
+            result.innerHTML = 'Checking...';
+            
+            try {
+                // Check localStorage
+                const localData = localStorage.getItem('registrations');
+                const resetFlag = localStorage.getItem('registrationsReset');
+                
+                // Check shared data API
+                const sharedResponse = await fetch('/api/shared-data');
+                const sharedData = await sharedResponse.json();
+                
+                // Check users API
+                const usersResponse = await fetch('/api/users');
+                const usersData = await usersResponse.json();
+                
+                result.className = 'result info';
+                result.innerHTML = `Current State:
+
+localStorage:
+- registrations: ${localData ? JSON.parse(localData).length + ' items' : 'null'}
+- resetFlag: ${resetFlag || 'null'}
+
+Shared Data API:
+- Status: ${sharedResponse.status}
+- Count: ${sharedData.success ? sharedData.count : 'error'}
+- Data: ${sharedData.success ? JSON.stringify(sharedData.registrations, null, 2) : sharedData.message}
+
+Users API:
+- Status: ${usersResponse.status}
+- Response: ${JSON.stringify(usersData, null, 2)}`;
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        async function testSharedDataAPI() {
+            const result = document.getElementById('shared-result');
+            result.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('/api/shared-data');
+                const data = await response.json();
+                
+                result.className = 'result ' + (response.ok ? 'success' : 'error');
+                result.innerHTML = `Shared Data API Test:
+Status: ${response.status}
+Success: ${data.success}
+Count: ${data.count}
+Data: ${JSON.stringify(data.registrations, null, 2)}`;
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        async function addTestRegistration() {
+            const result = document.getElementById('shared-result');
+            result.innerHTML = 'Adding test registration...';
+            
+            const testUser = {
+                name: 'Test User ' + Date.now(),
+                email: 'test' + Date.now() + '@example.com',
+                phone: '+218 91 234 5678',
+                experience: 'beginner',
+                interests: ['prompting', 'coding'],
+                hearAbout: 'Test',
+                notes: 'Test registration via shared API'
+            };
+            
+            try {
+                const response = await fetch('/api/shared-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testUser)
+                });
+                
+                const data = await response.json();
+                
+                result.className = 'result ' + (response.ok ? 'success' : 'error');
+                result.innerHTML = `Add Test Registration:
+Status: ${response.status}
+Success: ${data.success}
+Message: ${data.message}
+Total Count: ${data.totalCount}
+Added User: ${JSON.stringify(data.user, null, 2)}`;
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        async function clearSharedData() {
+            const result = document.getElementById('shared-result');
+            result.innerHTML = 'Clearing shared data...';
+            
+            try {
+                const response = await fetch('/api/shared-data', {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                result.className = 'result ' + (response.ok ? 'success' : 'error');
+                result.innerHTML = `Clear Shared Data:
+Status: ${response.status}
+Success: ${data.success}
+Message: ${data.message}
+Previous Count: ${data.previousCount}`;
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        async function testFullRegistration() {
+            const result = document.getElementById('registration-result');
+            result.innerHTML = 'Testing full registration flow...';
+            
+            const testData = {
+                name: 'Full Test User',
+                email: 'fulltest' + Date.now() + '@example.com',
+                phone: '0912345678',
+                experience: 'intermediate',
+                interests: ['prompting', 'n8n'],
+                hearAbout: 'Full Test',
+                notes: 'Testing complete registration flow'
+            };
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const data = await response.json();
+                
+                result.className = 'result ' + (response.ok ? 'success' : 'error');
+                result.innerHTML = `Full Registration Test:
+Status: ${response.status}
+Success: ${data.success}
+Message: ${data.message}
+User: ${JSON.stringify(data.user, null, 2)}
+Total Registrations: ${data.totalRegistrations}`;
+                
+                // Also check if it was saved to localStorage
+                const localData = localStorage.getItem('registrations');
+                if (localData) {
+                    const parsed = JSON.parse(localData);
+                    result.innerHTML += `\n\nLocalStorage after registration:
+Count: ${parsed.length}
+Latest: ${JSON.stringify(parsed[parsed.length - 1], null, 2)}`;
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        async function testDataSync() {
+            const result = document.getElementById('sync-result');
+            result.innerHTML = 'Testing data synchronization...';
+            
+            try {
+                // First, add some data to localStorage only
+                const localOnlyUser = {
+                    id: Date.now(),
+                    name: 'Local Only User',
+                    email: 'localonly@example.com',
+                    phone: '+218 91 111 1111',
+                    experience: 'advanced',
+                    interests: ['api'],
+                    registrationDate: new Date().toISOString()
+                };
+                
+                let localData = [];
+                const existing = localStorage.getItem('registrations');
+                if (existing) {
+                    localData = JSON.parse(existing);
+                }
+                localData.push(localOnlyUser);
+                localStorage.setItem('registrations', JSON.stringify(localData));
+                
+                // Now test sync by calling the shared data API with PUT
+                const syncResponse = await fetch('/api/shared-data', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ registrations: localData })
+                });
+                
+                const syncData = await syncResponse.json();
+                
+                // Check if sync worked
+                const checkResponse = await fetch('/api/shared-data');
+                const checkData = await checkResponse.json();
+                
+                result.className = 'result ' + (syncResponse.ok ? 'success' : 'error');
+                result.innerHTML = `Data Sync Test:
+Sync Status: ${syncResponse.status}
+Sync Success: ${syncData.success}
+Sync Message: ${syncData.message}
+Sync Count: ${syncData.count}
+
+Verification:
+Shared API Count: ${checkData.count}
+Shared API Data: ${JSON.stringify(checkData.registrations, null, 2)}`;
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        async function resetEverything() {
+            const result = document.getElementById('reset-result');
+            result.innerHTML = 'Resetting everything...';
+            
+            try {
+                // Clear localStorage
+                localStorage.removeItem('registrations');
+                localStorage.removeItem('registrationsReset');
+                sessionStorage.removeItem('registrationsReset');
+                
+                // Clear shared data
+                const clearResponse = await fetch('/api/shared-data', {
+                    method: 'DELETE'
+                });
+                
+                const clearData = await clearResponse.json();
+                
+                result.className = 'result success';
+                result.innerHTML = `Reset Complete:
+localStorage: Cleared
+sessionStorage: Cleared
+Shared Data API: ${clearData.success ? 'Cleared' : 'Error'}
+Previous Shared Count: ${clearData.previousCount || 'unknown'}`;
+            } catch (error) {
+                result.className = 'result error';
+                result.innerHTML = `Error: ${error.message}`;
+            }
+        }
+        
+        // Auto-check state on page load
+        window.onload = function() {
+            checkCurrentState();
+        };
+    </script>
+</body>
+</html>

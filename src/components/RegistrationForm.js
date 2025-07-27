@@ -124,7 +124,7 @@ const RegistrationForm = () => {
         // Track successful registration
         trackRegistration('success', formData.interests.join(','));
         
-        // Also save to localStorage as backup and for immediate admin panel access
+        // Also save to localStorage and sync with shared data API
         try {
           let existingData = [];
           const storedData = localStorage.getItem('registrations');
@@ -138,7 +138,27 @@ const RegistrationForm = () => {
           localStorage.removeItem('registrationsReset');
           sessionStorage.removeItem('registrationsReset');
           
-          logger.debug('Data also saved to localStorage for admin panel');
+          logger.debug('Data saved to localStorage');
+          
+          // Also try to sync with shared data API
+          try {
+            const sharedResponse = await fetch('/api/shared-data', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(result.user)
+            });
+            
+            if (sharedResponse.ok) {
+              logger.debug('Data also synced to shared data API');
+            } else {
+              logger.warn('Failed to sync to shared data API, but registration successful');
+            }
+          } catch (sharedError) {
+            logger.warn('Error syncing to shared data API:', sharedError.message);
+            // Don't fail the registration for this
+          }
         } catch (localStorageError) {
           logger.warn('Failed to save to localStorage:', localStorageError);
         }

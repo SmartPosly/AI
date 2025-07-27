@@ -1,3 +1,7 @@
+// In-memory storage for registrations (will reset on each deployment)
+// This is a temporary solution for Vercel serverless environment
+let registrations = [];
+
 // Serverless function for registration
 export default function handler(req, res) {
   // Set CORS headers
@@ -23,7 +27,6 @@ export default function handler(req, res) {
   // Handle POST request
   if (req.method === 'POST') {
     try {
-      // EMERGENCY FIX: Inline user creation (no external storage module)
       const userData = req.body;
       
       // Format phone number
@@ -44,10 +47,17 @@ export default function handler(req, res) {
         registrationDate: new Date().toISOString()
       };
       
+      // Store in memory (temporary solution)
+      registrations.push(newUser);
+      
+      console.log('New registration added:', newUser.name, newUser.email);
+      console.log('Total registrations in memory:', registrations.length);
+      
       res.status(201).json({ 
         success: true, 
         message: 'تم التسجيل بنجاح',
-        user: newUser 
+        user: newUser,
+        totalRegistrations: registrations.length
       });
     } catch (error) {
       console.error('Error registering user:', error);
@@ -56,9 +66,16 @@ export default function handler(req, res) {
         message: 'حدث خطأ في التسجيل. يرجى المحاولة مرة أخرى.' 
       });
     }
+  } else if (req.method === 'GET') {
+    // Allow GET to retrieve current registrations for debugging
+    res.status(200).json({
+      success: true,
+      registrations: registrations,
+      count: registrations.length
+    });
   } else {
     // Handle any other HTTP method
-    res.setHeader('Allow', ['POST']);
+    res.setHeader('Allow', ['POST', 'GET']);
     res.status(405).json({ 
       success: false, 
       message: `Method ${req.method} Not Allowed` 
