@@ -1,1 +1,15 @@
-[]
+[
+  {
+    "id": 1,
+    "name": "Test Registration",
+    "email": "test@example.com",
+    "phone": "+218 0913555000",
+    "experience": "beginner",
+    "interests": [
+      "prompting"
+    ],
+    "hearAbout": "Test",
+    "notes": "Testing storage issue",
+    "registrationDate": "2025-07-27T00:33:17.276Z"
+  }
+]

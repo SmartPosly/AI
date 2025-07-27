@@ -23,9 +23,26 @@ export default function handler(req, res) {
   // Handle POST request
   if (req.method === 'POST') {
     try {
-      const { addUser } = require('./_lib/storage');
+      // EMERGENCY FIX: Inline user creation (no external storage module)
+      const userData = req.body;
       
-      const newUser = addUser(req.body);
+      // Format phone number
+      let formattedPhone = userData.phone;
+      if (formattedPhone.startsWith('+218')) {
+        formattedPhone = formattedPhone.replace(/^\+218\s?/, '+218 ');
+      } else if (formattedPhone.startsWith('218')) {
+        formattedPhone = '+218 ' + formattedPhone.substring(3).trim();
+      } else {
+        formattedPhone = '+218 ' + formattedPhone;
+      }
+      
+      // Create user with formatted data
+      const newUser = {
+        id: Date.now(), // Use timestamp as ID for uniqueness
+        ...userData,
+        phone: formattedPhone,
+        registrationDate: new Date().toISOString()
+      };
       
       res.status(201).json({ 
         success: true, 

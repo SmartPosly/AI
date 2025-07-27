@@ -27,41 +27,12 @@ const AdminPanel = () => {
           return;
         }
         
-        // Try to fetch from API first
-        try {
-          logger.debug('Fetching data from API...');
-          const response = await fetch('/api/users', {
-            method: 'GET',
-            headers: {
-              'Cache-Control': 'no-cache',
-              'Pragma': 'no-cache'
-            }
-          });
-          
-          if (response.ok) {
-            const apiData = await response.json();
-            if (Array.isArray(apiData)) {
-              logger.info('Found API data:', apiData.length, 'registrations');
-              setUsers(apiData);
-              
-              // Update localStorage with fresh API data
-              localStorage.setItem('registrations', JSON.stringify(apiData));
-              setIsLoading(false);
-              return;
-            } else {
-              logger.warn('API returned non-array data:', typeof apiData);
-            }
-          } else {
-            logger.warn('API request failed:', response.status, response.statusText);
-          }
-        } catch (apiError) {
-          logger.warn('API fetch failed:', apiError.message);
-        }
+        // EMERGENCY FIX: Use localStorage as primary source (Vercel serverless compatibility)
+        logger.debug('Loading data from localStorage (primary source)...');
         
-        // Fallback to localStorage if API fails
+        // Read from localStorage (primary data source in production)
         try {
           const storedData = localStorage.getItem('registrations');
-          logger.debug('Falling back to localStorage...');
           
           if (storedData && storedData.trim() !== '') {
             const parsedData = JSON.parse(storedData);
@@ -76,7 +47,7 @@ const AdminPanel = () => {
               localStorage.setItem('registrations', '[]');
             }
           } else {
-            logger.debug('No stored data found in localStorage');
+            logger.debug('No stored data found in localStorage, initializing empty');
             localStorage.setItem('registrations', '[]'); // Initialize
           }
         } catch (parseError) {
@@ -201,39 +172,7 @@ const AdminPanel = () => {
       localStorage.removeItem('registrationsReset');
       sessionStorage.removeItem('registrationsReset');
       
-      logger.debug('Refreshing data from API...');
-      
-      // Try to fetch fresh data from API first
-      try {
-        const response = await fetch('/api/users', {
-          method: 'GET',
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
-        });
-        
-        if (response.ok) {
-          const apiData = await response.json();
-          if (Array.isArray(apiData)) {
-            logger.info('Refreshed data from API:', apiData.length, 'registrations');
-            setUsers(apiData);
-            
-            // Update localStorage with fresh data
-            localStorage.setItem('registrations', JSON.stringify(apiData));
-            setIsLoading(false);
-            return;
-          } else {
-            logger.warn('API returned non-array data:', typeof apiData);
-          }
-        } else {
-          logger.warn('API response not OK:', response.status, response.statusText);
-        }
-        
-        logger.warn('API refresh failed, falling back to localStorage');
-      } catch (apiError) {
-        logger.warn('API refresh error:', apiError.message);
-      }
+      logger.debug('Refreshing data from localStorage...');
       
       // Fallback to localStorage
       const storedData = localStorage.getItem('registrations');

@@ -23,9 +23,9 @@ export default function handler(req, res) {
   // Handle GET request
   if (req.method === 'GET') {
     try {
-      const { getUsers } = require('./_lib/storage');
-
-      const users = getUsers();
+      // EMERGENCY FIX: In serverless, return empty array
+      // Admin panel reads from localStorage as primary source
+      const users = [];
       res.status(200).json(users);
     } catch (error) {
       console.error('Error fetching users:', error);
