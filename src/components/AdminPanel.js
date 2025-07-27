@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import * as XLSX from 'xlsx';
+import { logger } from '../utils/logger';
 
 const AdminPanel = () => {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  // eslint-disable-next-line no-unused-vars
-  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'registrationDate', direction: 'desc' });
   const [isResetting, setIsResetting] = useState(false);
@@ -15,14 +14,14 @@ const AdminPanel = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log('Loading registration data...');
+        logger.debug('Loading registration data...');
         
         // Always check for reset flag first
         const wasReset = localStorage.getItem('registrationsReset') === 'true';
-        console.log('Reset flag status:', wasReset);
+        logger.debug('Reset flag status:', wasReset);
         
         if (wasReset) {
-          console.log('Data was reset, keeping list empty');
+          logger.info('Data was reset, keeping list empty');
           setUsers([]);
           setIsLoading(false);
           return;
@@ -30,7 +29,7 @@ const AdminPanel = () => {
         
         // Try to fetch from API first
         try {
-          console.log('Fetching data from API...');
+          logger.debug('Fetching data from API...');
           const response = await fetch('/api/users', {
             method: 'GET',
             headers: {
@@ -41,8 +40,8 @@ const AdminPanel = () => {
           
           if (response.ok) {
             const apiData = await response.json();
-            if (Array.isArray(apiData) && apiData.length > 0) {
-              console.log('Found API data:', apiData.length, 'registrations');
+            if (Array.isArray(apiData)) {
+              logger.info('Found API data:', apiData.length, 'registrations');
               setUsers(apiData);
               
               // Update localStorage with fresh API data
@@ -50,44 +49,47 @@ const AdminPanel = () => {
               setIsLoading(false);
               return;
             } else {
-              console.log('API returned empty or invalid data');
+              logger.warn('API returned non-array data:', typeof apiData);
             }
           } else {
-            console.warn('API request failed:', response.status, response.statusText);
+            logger.warn('API request failed:', response.status, response.statusText);
           }
         } catch (apiError) {
-          console.warn('API fetch failed:', apiError.message);
+          logger.warn('API fetch failed:', apiError.message);
         }
         
         // Fallback to localStorage if API fails
         try {
           const storedData = localStorage.getItem('registrations');
-          console.log('Falling back to localStorage...');
+          logger.debug('Falling back to localStorage...');
           
-          if (storedData) {
+          if (storedData && storedData.trim() !== '') {
             const parsedData = JSON.parse(storedData);
             
-            if (Array.isArray(parsedData) && parsedData.length > 0) {
-              console.log('Found localStorage data:', parsedData.length, 'registrations');
+            if (Array.isArray(parsedData)) {
+              logger.info('Found localStorage data:', parsedData.length, 'registrations');
               setUsers(parsedData);
               setIsLoading(false);
               return;
             } else {
-              console.warn('Stored data is not a valid array');
+              logger.warn('Stored data is not a valid array, resetting');
+              localStorage.setItem('registrations', '[]');
             }
           } else {
-            console.log('No stored data found in localStorage');
+            logger.debug('No stored data found in localStorage');
+            localStorage.setItem('registrations', '[]'); // Initialize
           }
         } catch (parseError) {
-          console.error('Error parsing localStorage data:', parseError);
+          logger.error('Error parsing localStorage data:', parseError);
+          localStorage.setItem('registrations', '[]'); // Fix corrupted data
         }
         
         // No data found anywhere
-        console.log('No valid registrations found, showing empty list');
+        logger.info('No valid registrations found, showing empty list');
         setUsers([]);
         setIsLoading(false);
       } catch (err) {
-        console.error('Error loading users data:', err);
+        logger.error('Error loading users data:', err);
         setUsers([]);
       } finally {
         setIsLoading(false);
@@ -199,7 +201,7 @@ const AdminPanel = () => {
       localStorage.removeItem('registrationsReset');
       sessionStorage.removeItem('registrationsReset');
       
-      console.log('Refreshing data from API...');
+      logger.debug('Refreshing data from API...');
       
       // Try to fetch fresh data from API first
       try {
@@ -214,38 +216,51 @@ const AdminPanel = () => {
         if (response.ok) {
           const apiData = await response.json();
           if (Array.isArray(apiData)) {
-            console.log('Refreshed data from API:', apiData.length, 'registrations');
+            logger.info('Refreshed data from API:', apiData.length, 'registrations');
             setUsers(apiData);
             
             // Update localStorage with fresh data
             localStorage.setItem('registrations', JSON.stringify(apiData));
             setIsLoading(false);
             return;
+          } else {
+            logger.warn('API returned non-array data:', typeof apiData);
           }
+        } else {
+          logger.warn('API response not OK:', response.status, response.statusText);
         }
         
-        console.warn('API refresh failed, falling back to localStorage');
+        logger.warn('API refresh failed, falling back to localStorage');
       } catch (apiError) {
-        console.warn('API refresh error:', apiError.message);
+        logger.warn('API refresh error:', apiError.message);
       }
       
       // Fallback to localStorage
       const storedData = localStorage.getItem('registrations');
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        if (Array.isArray(parsedData)) {
-          console.log('Refreshed data from localStorage:', parsedData.length, 'registrations');
-          setUsers(parsedData);
-        } else {
-          console.warn('Refreshed data is not an array');
+      if (storedData && storedData.trim() !== '') {
+        try {
+          const parsedData = JSON.parse(storedData);
+          if (Array.isArray(parsedData)) {
+            logger.info('Refreshed data from localStorage:', parsedData.length, 'registrations');
+            setUsers(parsedData);
+          } else {
+            logger.warn('Stored data is not a valid array, resetting to empty array');
+            setUsers([]);
+            localStorage.setItem('registrations', '[]'); // Fix corrupted data
+          }
+        } catch (parseError) {
+          logger.error('Error parsing localStorage data:', parseError);
+          logger.debug('Resetting corrupted localStorage data');
           setUsers([]);
+          localStorage.setItem('registrations', '[]'); // Fix corrupted data
         }
       } else {
-        console.log('No data found during refresh');
+        logger.debug('No data found during refresh, starting with empty list');
         setUsers([]);
+        localStorage.setItem('registrations', '[]'); // Initialize empty array
       }
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      logger.error('Error refreshing data:', error);
       setUsers([]);
     }
     
@@ -264,15 +279,15 @@ const AdminPanel = () => {
         
         // Double-check that the flag was set
         const flagSet = localStorage.getItem('registrationsReset') === 'true';
-        console.log('Reset flag set:', flagSet);
+        logger.debug('Reset flag set:', flagSet);
         
         if (!flagSet) {
           // If flag wasn't set, try again with a different approach
           window.sessionStorage.setItem('registrationsReset', 'true');
-          console.log('Using session storage as fallback');
+          logger.debug('Using session storage as fallback');
         }
         
-        console.log('Registrations data cleared successfully');
+        logger.info('Registrations data cleared successfully');
         
         // Show loading state briefly
         setTimeout(() => {
@@ -280,7 +295,7 @@ const AdminPanel = () => {
           setIsResetting(false);
         }, 1000);
       } catch (error) {
-        console.error('Error clearing registrations:', error);
+        logger.error('Error clearing registrations:', error);
         alert('حدث خطأ أثناء إعادة تعيين القائمة. يرجى المحاولة مرة أخرى.');
         setIsResetting(false);
       }
@@ -379,10 +394,6 @@ const AdminPanel = () => {
       {isLoading || isResetting ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-700"></div>
-        </div>
-      ) : error ? (
-        <div className="p-4 rounded-lg text-center bg-red-50 text-red-700 border border-red-200">
-          <p>{error}</p>
         </div>
       ) : sortedUsers.length === 0 ? (
         <div className="p-8 rounded-lg text-center bg-gray-50 border border-gray-200">
@@ -523,17 +534,17 @@ window.resetRegistrationSystem = () => {
     localStorage.removeItem('registrationsReset');
     sessionStorage.removeItem('registrationsReset');
     
-    console.log('Registration system completely reset. All registrations have been cleared.');
-    console.log('To verify reset status:');
-    console.log('- localStorage.registrationsReset =', localStorage.getItem('registrationsReset'));
-    console.log('- localStorage.registrations =', localStorage.getItem('registrations'));
+    logger.info('Registration system completely reset. All registrations have been cleared.');
+    logger.debug('To verify reset status:');
+    logger.debug('- localStorage.registrationsReset =', localStorage.getItem('registrationsReset'));
+    logger.debug('- localStorage.registrations =', localStorage.getItem('registrations'));
     
     return {
       success: true,
       message: 'System reset complete. All registrations have been cleared.'
     };
   } catch (error) {
-    console.error('Error during system reset:', error);
+    logger.error('Error during system reset:', error);
     return {
       success: false,
       error: error.message

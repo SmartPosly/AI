@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { trackRegistration, trackFormInteraction } from '../utils/analytics';
+import { logger } from '../utils/logger';
 
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -104,7 +105,7 @@ const RegistrationForm = () => {
     setIsSubmitting(true);
 
     try {
-      console.log('Submitting registration data...');
+      logger.debug('Submitting registration data...');
       
       // Send data to API
       const response = await fetch('/api/register', {
@@ -118,7 +119,7 @@ const RegistrationForm = () => {
       const result = await response.json();
 
       if (response.ok && result.success) {
-        console.log('Registration successful:', result.user);
+        logger.info('Registration successful:', result.user);
         
         // Track successful registration
         trackRegistration('success', formData.interests.join(','));
@@ -137,9 +138,9 @@ const RegistrationForm = () => {
           localStorage.removeItem('registrationsReset');
           sessionStorage.removeItem('registrationsReset');
           
-          console.log('Data also saved to localStorage for admin panel');
+          logger.debug('Data also saved to localStorage for admin panel');
         } catch (localStorageError) {
-          console.warn('Failed to save to localStorage:', localStorageError);
+          logger.warn('Failed to save to localStorage:', localStorageError);
         }
 
         // Show success
@@ -157,14 +158,14 @@ const RegistrationForm = () => {
         throw new Error(result.message || 'Registration failed');
       }
     } catch (error) {
-      console.error('Registration error:', error);
+      logger.error('Registration error:', error);
       
       // Track failed registration
       trackRegistration('failed', formData.interests.join(','));
       
       // Fallback to localStorage only
       try {
-        console.log('Falling back to localStorage...');
+        logger.debug('Falling back to localStorage...');
         
         let existingData = [];
         const storedData = localStorage.getItem('registrations');
@@ -188,7 +189,7 @@ const RegistrationForm = () => {
         localStorage.removeItem('registrationsReset');
         sessionStorage.removeItem('registrationsReset');
 
-        console.log('Registration saved to localStorage as fallback');
+        logger.info('Registration saved to localStorage as fallback');
         
         // Show success
         setIsSubmitted(true);
@@ -202,7 +203,7 @@ const RegistrationForm = () => {
           notes: ''
         });
       } catch (fallbackError) {
-        console.error('Fallback also failed:', fallbackError);
+        logger.error('Fallback also failed:', fallbackError);
         alert('حدث خطأ أثناء حفظ بياناتك. يرجى المحاولة مرة أخرى.');
       }
     } finally {

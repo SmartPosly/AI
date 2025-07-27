@@ -4,7 +4,8 @@ import { useTheme } from "./hooks/useTheme";
 import RegistrationForm from "./components/RegistrationForm";
 import AdminPanel from "./components/AdminPanel";
 import { motion } from "framer-motion";
-import { trackPageView, trackAdminLogin, trackCourseInterest } from "./utils/analytics";
+import { trackPageView, trackAdminLogin } from "./utils/analytics";
+import { logger } from "./utils/logger";
 
 function MainApp() {
   // We're using ThemeContext but don't need to toggle since we're always in dark mode
@@ -68,7 +69,7 @@ function MainApp() {
       // If the flag exists, ensure it's properly set in localStorage
       if (wasReset) {
         localStorage.setItem('registrationsReset', 'true');
-        console.log('Reset flag detected and preserved during login');
+        logger.debug('Reset flag detected and preserved during login');
       }
 
       // Save admin login state to persist through refresh
