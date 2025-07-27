@@ -9,6 +9,7 @@ const AdminPanel = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'registrationDate', direction: 'desc' });
   const [isResetting, setIsResetting] = useState(false);
+  const [isSystemReset, setIsSystemReset] = useState(false);
 
   // Load user data from multiple sources
   useEffect(() => {
@@ -23,6 +24,7 @@ const AdminPanel = () => {
         if (wasReset) {
           logger.info('Data was reset, keeping list empty');
           setUsers([]);
+          setIsSystemReset(true);
           setIsLoading(false);
           return;
         }
@@ -110,6 +112,7 @@ const AdminPanel = () => {
         
         logger.info('Total unique registrations loaded:', allData.length);
         setUsers(allData);
+        setIsSystemReset(false); // Clear reset state when data is successfully loaded
         setIsLoading(false);
       } catch (err) {
         logger.error('Error loading users data:', err);
@@ -220,9 +223,17 @@ const AdminPanel = () => {
     setIsLoading(true);
     
     try {
-      // Clear any reset flag that might exist
-      localStorage.removeItem('registrationsReset');
-      sessionStorage.removeItem('registrationsReset');
+      // Check for reset flag first - if data was reset, don't load anything
+      const wasReset = localStorage.getItem('registrationsReset') === 'true';
+      logger.debug('Reset flag status during refresh:', wasReset);
+      
+      if (wasReset) {
+        logger.info('Data was reset, keeping list empty during refresh');
+        setUsers([]);
+        setIsSystemReset(true);
+        setIsLoading(false);
+        return;
+      }
       
       logger.debug('Refreshing data from all sources...');
       
@@ -295,6 +306,7 @@ const AdminPanel = () => {
       
       logger.info('Refresh complete, total registrations:', finalData.length);
       setUsers(finalData);
+      setIsSystemReset(false); // Clear reset state when data is successfully refreshed
     } catch (error) {
       logger.error('Error refreshing data:', error);
       setUsers([]);
@@ -304,34 +316,55 @@ const AdminPanel = () => {
   };
 
   // Reset the list
-  const resetList = () => {
+  const resetList = async () => {
     if (window.confirm('هل أنت متأكد من رغبتك في إعادة تعيين قائمة المسجلين؟ سيتم حذف جميع البيانات.')) {
       setIsResetting(true);
       
       try {
-        // First set the reset flag, then clear the data
-        localStorage.setItem('registrationsReset', 'true');
-        localStorage.removeItem('registrations');
+        logger.info('Starting complete system reset...');
         
-        // Double-check that the flag was set
-        const flagSet = localStorage.getItem('registrationsReset') === 'true';
-        logger.debug('Reset flag set:', flagSet);
-        
-        if (!flagSet) {
-          // If flag wasn't set, try again with a different approach
-          window.sessionStorage.setItem('registrationsReset', 'true');
-          logger.debug('Using session storage as fallback');
+        // Step 1: Clear shared data API first
+        try {
+          logger.debug('Clearing shared data API...');
+          const clearResponse = await fetch('/api/shared-data', {
+            method: 'DELETE',
+            headers: {
+              'Cache-Control': 'no-cache'
+            }
+          });
+          
+          if (clearResponse.ok) {
+            const clearResult = await clearResponse.json();
+            logger.info('Shared data API cleared successfully:', clearResult.previousCount, 'items removed');
+          } else {
+            logger.warn('Failed to clear shared data API, status:', clearResponse.status);
+          }
+        } catch (apiError) {
+          logger.error('Error clearing shared data API:', apiError.message);
+          // Continue with local cleanup even if API fails
         }
         
-        logger.info('Registrations data cleared successfully');
+        // Step 2: Clear localStorage
+        localStorage.removeItem('registrations');
+        localStorage.removeItem('registrationsReset');
+        sessionStorage.removeItem('registrationsReset');
+        logger.debug('Local storage cleared');
         
-        // Show loading state briefly
+        // Step 3: Set reset flag to prevent data reload
+        localStorage.setItem('registrationsReset', 'true');
+        
+        logger.info('Complete system reset successful');
+        
+        // Show loading state briefly, then clear the UI
         setTimeout(() => {
           setUsers([]);
           setIsResetting(false);
+          setIsSystemReset(true);
+          logger.debug('UI reset complete');
         }, 1000);
+        
       } catch (error) {
-        logger.error('Error clearing registrations:', error);
+        logger.error('Error during system reset:', error);
         alert('حدث خطأ أثناء إعادة تعيين القائمة. يرجى المحاولة مرة أخرى.');
         setIsResetting(false);
       }
@@ -350,10 +383,27 @@ const AdminPanel = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={refreshData}
-            className="px-4 py-2 rounded-lg font-medium bg-blue-500 hover:bg-blue-600 text-white"
+            onClick={() => {
+              if (isSystemReset) {
+                // If system was reset, ask user if they want to reload data
+                if (window.confirm('النظام في حالة إعادة تعيين. هل تريد إعادة تحميل البيانات؟')) {
+                  localStorage.removeItem('registrationsReset');
+                  sessionStorage.removeItem('registrationsReset');
+                  setIsSystemReset(false);
+                  refreshData();
+                }
+              } else {
+                // Normal refresh
+                refreshData();
+              }
+            }}
+            className={`px-4 py-2 rounded-lg font-medium text-white ${
+              isSystemReset 
+                ? 'bg-orange-500 hover:bg-orange-600' 
+                : 'bg-blue-500 hover:bg-blue-600'
+            }`}
           >
-            تحديث البيانات
+            {isSystemReset ? 'إعادة تحميل البيانات' : 'تحديث البيانات'}
           </motion.button>
           
           <motion.button
@@ -432,12 +482,31 @@ const AdminPanel = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-700"></div>
         </div>
       ) : sortedUsers.length === 0 ? (
-        <div className="p-8 rounded-lg text-center bg-gray-50 border border-gray-200">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-          </svg>
-          <h3 className="text-xl font-bold mb-2 text-gray-700">لا توجد بيانات للعرض</h3>
-          <p className="text-gray-500">لم يتم تسجيل أي مستخدمين بعد.</p>
+        <div className={`p-8 rounded-lg text-center border ${
+          isSystemReset 
+            ? 'bg-orange-50 border-orange-200' 
+            : 'bg-gray-50 border-gray-200'
+        }`}>
+          {isSystemReset ? (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+            </svg>
+          )}
+          <h3 className={`text-xl font-bold mb-2 ${
+            isSystemReset ? 'text-orange-700' : 'text-gray-700'
+          }`}>
+            {isSystemReset ? 'تم إعادة تعيين النظام' : 'لا توجد بيانات للعرض'}
+          </h3>
+          <p className={isSystemReset ? 'text-orange-600' : 'text-gray-500'}>
+            {isSystemReset 
+              ? 'تم مسح جميع البيانات. اضغط على "إعادة تحميل البيانات" لاستعادة البيانات المحفوظة.' 
+              : 'لم يتم تسجيل أي مستخدمين بعد.'
+            }
+          </p>
         </div>
       ) : (
         <div className="overflow-x-auto">
