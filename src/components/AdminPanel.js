@@ -29,11 +29,11 @@ const AdminPanel = () => {
           return;
         }
         
-        // Try to load from shared data API first
-        let sharedData = [];
+        // Try to load from users API (Supabase) first
+        let supabaseData = [];
         try {
-          logger.debug('Attempting to load from shared data API...');
-          const response = await fetch('/api/shared-data', {
+          logger.debug('Loading from users API (Supabase)...');
+          const response = await fetch('/api/users', {
             method: 'GET',
             headers: {
               'Cache-Control': 'no-cache'
@@ -42,15 +42,16 @@ const AdminPanel = () => {
           
           if (response.ok) {
             const result = await response.json();
-            if (result.success && Array.isArray(result.registrations)) {
-              sharedData = result.registrations;
-              logger.info('Loaded from shared data API:', sharedData.length, 'registrations');
+            if (result.success && Array.isArray(result.users)) {
+              supabaseData = result.users;
+              logger.info('Loaded from Supabase:', supabaseData.length, 'registrations');
+              logger.debug('Data source:', result.source);
             }
           } else {
-            logger.warn('Shared data API returned error:', response.status);
+            logger.warn('Users API returned error:', response.status);
           }
         } catch (apiError) {
-          logger.warn('Failed to load from shared data API:', apiError.message);
+          logger.warn('Failed to load from users API:', apiError.message);
         }
         
         // Load from localStorage as backup/supplement
@@ -69,49 +70,33 @@ const AdminPanel = () => {
           localStorage.setItem('registrations', '[]'); // Fix corrupted data
         }
         
-        // Merge data from both sources, removing duplicates by email
-        const allData = [...sharedData];
-        const existingEmails = new Set(sharedData.map(user => user.email));
+        // Use Supabase data as primary source, localStorage as backup
+        let finalData = [];
         
-        localData.forEach(user => {
-          if (!existingEmails.has(user.email)) {
-            allData.push(user);
-            existingEmails.add(user.email);
-          }
-        });
-        
-        // If we have data from shared API but not in localStorage, sync it
-        if (sharedData.length > 0 && localData.length === 0) {
+        if (supabaseData.length > 0) {
+          // Use Supabase data (primary source)
+          finalData = supabaseData;
+          logger.info('Using Supabase data as primary source');
+          
+          // Sync to localStorage as backup
           try {
-            localStorage.setItem('registrations', JSON.stringify(sharedData));
-            logger.debug('Synced shared data to localStorage');
+            localStorage.setItem('registrations', JSON.stringify(supabaseData));
+            logger.debug('Synced Supabase data to localStorage backup');
           } catch (syncError) {
             logger.warn('Failed to sync to localStorage:', syncError);
           }
+        } else if (localData.length > 0) {
+          // Fallback to localStorage if Supabase is unavailable
+          finalData = localData;
+          logger.info('Using localStorage as fallback source');
+        } else {
+          // No data found anywhere
+          finalData = [];
+          logger.info('No registration data found');
         }
         
-        // If we have more data in localStorage, sync it to shared API
-        if (localData.length > sharedData.length && localData.length > 0) {
-          try {
-            logger.debug('Syncing localStorage data to shared API...');
-            const syncResponse = await fetch('/api/shared-data', {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ registrations: localData })
-            });
-            
-            if (syncResponse.ok) {
-              logger.info('Successfully synced localStorage to shared API');
-            }
-          } catch (syncError) {
-            logger.warn('Failed to sync to shared API:', syncError);
-          }
-        }
-        
-        logger.info('Total unique registrations loaded:', allData.length);
-        setUsers(allData);
+        logger.info('Total registrations loaded:', finalData.length);
+        setUsers(finalData);
         setIsSystemReset(false); // Clear reset state when data is successfully loaded
         setIsLoading(false);
       } catch (err) {
@@ -235,13 +220,13 @@ const AdminPanel = () => {
         return;
       }
       
-      logger.debug('Refreshing data from all sources...');
+      logger.debug('Refreshing data from Supabase...');
       
-      // Try to load from shared data API first
-      let sharedData = [];
+      // Load fresh data from users API (Supabase)
+      let refreshedData = [];
       try {
-        logger.debug('Refreshing from shared data API...');
-        const response = await fetch('/api/shared-data', {
+        logger.debug('Refreshing from users API (Supabase)...');
+        const response = await fetch('/api/users', {
           method: 'GET',
           headers: {
             'Cache-Control': 'no-cache'
@@ -250,62 +235,55 @@ const AdminPanel = () => {
         
         if (response.ok) {
           const result = await response.json();
-          if (result.success && Array.isArray(result.registrations)) {
-            sharedData = result.registrations;
-            logger.info('Refreshed from shared data API:', sharedData.length, 'registrations');
+          if (result.success && Array.isArray(result.users)) {
+            refreshedData = result.users;
+            logger.info('Refreshed from Supabase:', refreshedData.length, 'registrations');
+            
+            // Update localStorage backup
+            try {
+              localStorage.setItem('registrations', JSON.stringify(refreshedData));
+              logger.debug('Updated localStorage backup during refresh');
+            } catch (syncError) {
+              logger.warn('Failed to update localStorage backup:', syncError);
+            }
+          }
+        } else {
+          logger.warn('Users API returned error during refresh:', response.status);
+          
+          // Fallback to localStorage if API fails
+          const storedData = localStorage.getItem('registrations');
+          if (storedData) {
+            try {
+              const parsedData = JSON.parse(storedData);
+              if (Array.isArray(parsedData)) {
+                refreshedData = parsedData;
+                logger.info('Using localStorage fallback during refresh:', refreshedData.length, 'registrations');
+              }
+            } catch (parseError) {
+              logger.error('Error parsing localStorage during refresh:', parseError);
+            }
           }
         }
       } catch (apiError) {
-        logger.warn('Failed to refresh from shared data API:', apiError.message);
-      }
-      
-      // Load from localStorage as backup
-      let localData = [];
-      try {
+        logger.warn('Failed to refresh from users API:', apiError.message);
+        
+        // Fallback to localStorage
         const storedData = localStorage.getItem('registrations');
-        if (storedData && storedData.trim() !== '') {
-          const parsedData = JSON.parse(storedData);
-          if (Array.isArray(parsedData)) {
-            localData = parsedData;
-            logger.info('Refreshed from localStorage:', localData.length, 'registrations');
-          }
-        }
-      } catch (parseError) {
-        logger.error('Error parsing localStorage data during refresh:', parseError);
-        localStorage.setItem('registrations', '[]'); // Fix corrupted data
-      }
-      
-      // Use the source with more data, or shared data if equal
-      const finalData = sharedData.length >= localData.length ? sharedData : localData;
-      
-      // Sync the data if needed
-      if (sharedData.length !== localData.length) {
-        try {
-          if (sharedData.length > localData.length) {
-            // Sync shared data to localStorage
-            localStorage.setItem('registrations', JSON.stringify(sharedData));
-            logger.debug('Synced shared data to localStorage during refresh');
-          } else if (localData.length > 0) {
-            // Sync localStorage to shared data
-            const syncResponse = await fetch('/api/shared-data', {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ registrations: localData })
-            });
-            
-            if (syncResponse.ok) {
-              logger.info('Synced localStorage to shared API during refresh');
+        if (storedData) {
+          try {
+            const parsedData = JSON.parse(storedData);
+            if (Array.isArray(parsedData)) {
+              refreshedData = parsedData;
+              logger.info('Using localStorage fallback after API error:', refreshedData.length, 'registrations');
             }
+          } catch (parseError) {
+            logger.error('Error parsing localStorage fallback:', parseError);
           }
-        } catch (syncError) {
-          logger.warn('Failed to sync data during refresh:', syncError);
         }
       }
       
-      logger.info('Refresh complete, total registrations:', finalData.length);
-      setUsers(finalData);
+      logger.info('Refresh complete, total registrations:', refreshedData.length);
+      setUsers(refreshedData);
       setIsSystemReset(false); // Clear reset state when data is successfully refreshed
     } catch (error) {
       logger.error('Error refreshing data:', error);
@@ -323,10 +301,10 @@ const AdminPanel = () => {
       try {
         logger.info('Starting complete system reset...');
         
-        // Step 1: Clear shared data API first
+        // Step 1: Clear Supabase database first
         try {
-          logger.debug('Clearing shared data API...');
-          const clearResponse = await fetch('/api/shared-data', {
+          logger.debug('Clearing Supabase database...');
+          const clearResponse = await fetch('/api/delete-all', {
             method: 'DELETE',
             headers: {
               'Cache-Control': 'no-cache'
@@ -335,12 +313,12 @@ const AdminPanel = () => {
           
           if (clearResponse.ok) {
             const clearResult = await clearResponse.json();
-            logger.info('Shared data API cleared successfully:', clearResult.previousCount, 'items removed');
+            logger.info('Supabase database cleared successfully:', clearResult.deletedCount, 'items removed');
           } else {
-            logger.warn('Failed to clear shared data API, status:', clearResponse.status);
+            logger.warn('Failed to clear Supabase database, status:', clearResponse.status);
           }
         } catch (apiError) {
-          logger.error('Error clearing shared data API:', apiError.message);
+          logger.error('Error clearing Supabase database:', apiError.message);
           // Continue with local cleanup even if API fails
         }
         
